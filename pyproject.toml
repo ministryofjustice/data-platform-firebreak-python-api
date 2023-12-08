@@ -25,7 +25,6 @@ moto = "^4.2.11"
 freezegun = "^1.3.1"
 pre-commit = "^3.5.0"
 black = "^23.11.0"
-isort = "^5.12.0"
 detect-secrets = "^1.4.0"
 
 [build-system]
