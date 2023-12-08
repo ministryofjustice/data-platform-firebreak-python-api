@@ -32,7 +32,7 @@ async def get_metadata(data_product_name: str):
 
 
 @router.get("/schemas/{data_product_name}/{table_name}")
-async def get_metadata(data_product_name: str, table_name: str):
+async def get_schema(data_product_name: str, table_name: str):
     logger.add_data_product(data_product_name, table_name)
 
     schema = DataProductSchema(
