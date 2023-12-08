@@ -11,6 +11,7 @@ This proof of concept will explore migrating the DaaP API to a single python con
 - Run `poetry run uvicorn daap_api.main:app --reload`
 - The API is served at http://127.0.0.1:8000/
 - The docs are served at http://127.0.0.1:8000/redoc
+- Run the tests: `poetry run pytest`
 
 ## Included Files
 
