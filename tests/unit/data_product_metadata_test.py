@@ -148,48 +148,6 @@ def load_test_schema(bucket_name, s3_client, schema=test_glue_table_input):
     )
 
 
-@pytest.mark.parametrize(
-    "spec_type, expected_out",
-    [
-        (
-            JsonSchemaName("metadata"),
-            "s3://metadata/data_product_metadata_spec/v2.10/moj_data_product_metadata_spec.json",
-        ),
-        (
-            JsonSchemaName("schema"),
-            "s3://metadata/data_product_schema_spec/v2.10/moj_data_product_schema_spec.json",
-        ),
-    ],
-)
-def test_get_latest_metadata_spec_path(spec_type, expected_out, monkeypatch):
-    monkeypatch.setattr(
-        metadata_services,
-        "get_filepaths_from_s3_folder",
-        lambda _name: ["v1.1/foo/bar", "v2.2/foo/bar", "v2.10/foo/bar"],
-    )
-
-    path = metadata_services.get_data_product_specification_path(spec_type)
-    assert path == expected_out
-
-
-@pytest.mark.parametrize(
-    "spec_type, expected_out",
-    [
-        (
-            JsonSchemaName("metadata"),
-            "s3://metadata/data_product_metadata_spec/v1/moj_data_product_metadata_spec.json",
-        ),
-        (
-            JsonSchemaName("schema"),
-            "s3://metadata/data_product_schema_spec/v1/moj_data_product_schema_spec.json",
-        ),
-    ],
-)
-def test_get_specific_metadata_spec_path(spec_type, expected_out):
-    path = metadata_services.get_data_product_specification_path(spec_type, "v1")
-    assert path == expected_out
-
-
 class TestDataProductMetadata:
     @pytest.fixture(autouse=True)
     def setup(self, metadata_bucket):

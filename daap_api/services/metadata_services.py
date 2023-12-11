@@ -7,10 +7,11 @@ from typing import Dict
 
 import boto3
 import botocore
-from dataengineeringutils3.s3 import get_filepaths_from_s3_folder, read_json_from_s3
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
+from dataengineeringutils3.s3 import read_json_from_s3
+from pydantic import ValidationError
 
+from ..models.data_product import DataProduct
+from ..models.schema import Schema
 from .data_platform_logging import DataPlatformLogger
 from .data_platform_paths import (
     BucketPath,
@@ -72,29 +73,6 @@ def format_table_schema(glue_schema: dict) -> dict:
             for column in columns
         ],
     }
-
-
-def get_data_product_specification_path(
-    spec_type: JsonSchemaName, version: None | str = None
-) -> str:
-    """
-    Gets the specification path for the JSON schema that validates a data product metadata
-    or table schema. If a version is not specified, the latest JSON schema version is assumed.
-    """
-
-    # if version is empty we get the latest version
-    if version is None:
-        file_paths = get_filepaths_from_s3_folder(specification_prefix(spec_type).uri)
-        versions = list(
-            {i for p in file_paths for i in p.split("/") if i.startswith("v")}
-        )
-        versions.sort(key=lambda x: [int(y.replace("v", "")) for y in x.split(".")])
-        latest_version = versions[-1]
-        path = specification_path(spec_type, latest_version)
-    else:
-        path = specification_path(spec_type, version)
-
-    return path.uri
 
 
 class BaseJsonSchema:
@@ -173,13 +151,8 @@ class BaseJsonSchema:
         on successful validation of dict object it is saved to the class instance
         property which can be written to s3.
         """
-        json_spec_path = get_data_product_specification_path(
-            self.type, json_schema_version
-        )
-        self.logger.info(f"json_spec used for validation: {json_spec_path}")
-        json_spec_to_validate_against = read_json_from_s3(json_spec_path)
         try:
-            validate(instance=data_to_validate, schema=json_spec_to_validate_against)
+            self.model_class.model_validate(data_to_validate)
         except ValidationError:
             self.error_traceback = traceback.format_exc()
             self.logger.error(
@@ -260,6 +233,8 @@ class DataProductSchema(BaseJsonSchema):
     class to handle creation and updating of
     schema json files relating to data product tables
     """
+
+    model_class = Schema
 
     def __init__(
         self,
@@ -430,6 +405,8 @@ class DataProductMetadata(BaseJsonSchema):
     class to handle creation and updating of
     schema json files relating to data products as a whole
     """
+
+    model_class = DataProduct
 
     def __init__(
         self,
