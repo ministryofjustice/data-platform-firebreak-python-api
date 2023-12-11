@@ -53,3 +53,7 @@ Useful commands:
 - `poetry run alembic downgrade -1` - revert the most recent migration
 - `poetry run alembic downgrade base` - reset database to the starting state
 - `poetry run alembic current` - show the databases's current version
+
+## Architecture notes
+
+See [docs/architecture.md](./docs/architecture.md)
