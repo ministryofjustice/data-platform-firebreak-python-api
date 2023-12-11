@@ -1,9 +1,7 @@
 import json
 import os
-import sys
 import time
 import urllib
-from os.path import dirname, join
 from unittest.mock import patch
 
 import boto3
@@ -22,7 +20,7 @@ time.tzset()
 
 from daap_api.services.data_platform_logging import DataPlatformLogger  # noqa E402
 from daap_api.services.data_platform_paths import DataProductElement  # noqa E402
-from daap_api.services.data_product_metadata import DataProductMetadata  # noqa E402
+from daap_api.services.metadata_services import DataProductMetadata  # noqa E402
 
 
 @pytest.fixture

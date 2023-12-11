@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from ..models.data_product import DataProduct
 from ..models.schema import Schema
 from ..services.data_platform_logging import DataPlatformLogger
-from ..services.data_product_metadata import (
+from ..services.metadata_services import (
     DataProductMetadata,
     DataProductSchema,
     format_table_schema,

@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from daap_api.services import data_product_metadata
+from daap_api.services import metadata_services
 from daap_api.services.data_platform_paths import JsonSchemaName
-from daap_api.services.data_product_metadata import (
+from daap_api.services.metadata_services import (
     DataProductMetadata,
     DataProductSchema,
     format_table_schema,
@@ -163,12 +163,12 @@ def load_test_schema(bucket_name, s3_client, schema=test_glue_table_input):
 )
 def test_get_latest_metadata_spec_path(spec_type, expected_out, monkeypatch):
     monkeypatch.setattr(
-        data_product_metadata,
+        metadata_services,
         "get_filepaths_from_s3_folder",
         lambda _name: ["v1.1/foo/bar", "v2.2/foo/bar", "v2.10/foo/bar"],
     )
 
-    path = data_product_metadata.get_data_product_specification_path(spec_type)
+    path = metadata_services.get_data_product_specification_path(spec_type)
     assert path == expected_out
 
 
@@ -186,7 +186,7 @@ def test_get_latest_metadata_spec_path(spec_type, expected_out, monkeypatch):
     ],
 )
 def test_get_specific_metadata_spec_path(spec_type, expected_out):
-    path = data_product_metadata.get_data_product_specification_path(spec_type, "v1")
+    path = metadata_services.get_data_product_specification_path(spec_type, "v1")
     assert path == expected_out
 
 

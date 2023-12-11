@@ -1,11 +1,11 @@
 from ..data_platform_logging import DataPlatformLogger
 from ..data_platform_paths import DataProductElement, QueryTable
-from ..data_product_metadata import DataProductSchema, format_table_schema
 from ..glue_and_athena_utils import (
     create_glue_database,
     refresh_table_partitions,
     start_query_execution_and_wait,
 )
+from ..metadata_services import DataProductSchema, format_table_schema
 from .curated_data_query_builder import CuratedDataQueryBuilder
 
 

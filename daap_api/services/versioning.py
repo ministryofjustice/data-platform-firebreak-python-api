@@ -16,8 +16,8 @@ from .data_platform_paths import (
     generate_element_version_prefixes_for_version,
     get_database_name_for_version,
 )
-from .data_product_metadata import DataProductMetadata, DataProductSchema
 from .glue_and_athena_utils import clone_database, delete_table
+from .metadata_services import DataProductMetadata, DataProductSchema
 
 athena_client = boto3.client("athena")
 glue_client = boto3.client("glue")

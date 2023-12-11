@@ -6,7 +6,7 @@ import pytest
 
 from daap_api.services.curated_data.curated_data_loader import CuratedDataCopier
 from daap_api.services.data_platform_paths import DataProductElement
-from daap_api.services.data_product_metadata import DataProductSchema
+from daap_api.services.metadata_services import DataProductSchema
 
 test_metadata = {
     "name": "test_product",
@@ -96,7 +96,7 @@ class TestCuratedDataCopier:
         )
         schema.convert_schema_to_glue_table_input_csv()
         schema2.convert_schema_to_glue_table_input_csv()
-        with patch("daap_api.services.data_product_metadata.s3_client", s3_client):
+        with patch("daap_api.services.metadata_services.s3_client", s3_client):
             schema.write_json_to_s3("test_product/v1.0/test_table/schema.json")
             schema.write_json_to_s3("test_product/v1.0/test_table1/schema.json")
         new_schema = DataProductSchema(
