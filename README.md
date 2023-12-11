@@ -17,4 +17,5 @@ This proof of concept will explore migrating the DaaP API to a single python con
 **Note**: metadata endpoints currently assume you have AWS environment variables set.
 
 ## Architecture notes
+
 See [docs/architecture.md](./docs/architecture.md)
