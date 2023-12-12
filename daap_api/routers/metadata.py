@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-from ..models.data_product import DataProduct
-from ..models.schema import Schema
+from ..models.data_product import DataProductRead
+from ..models.schema import SchemaRead
 from ..services.data_platform_logging import DataPlatformLogger
 from ..services.metadata_services import (
     DataProductMetadata,
@@ -16,7 +16,7 @@ logger = DataPlatformLogger()
 
 
 @router.get("/data-products/{data_product_name}")
-async def get_metadata(data_product_name: str) -> DataProduct:
+async def get_metadata(data_product_name: str) -> DataProductRead:
     logger.add_data_product(data_product_name)
 
     metadata = DataProductMetadata(
@@ -30,11 +30,11 @@ async def get_metadata(data_product_name: str) -> DataProduct:
         logger.error(message)
         raise HTTPException(status_code=404, detail=message)
 
-    return DataProduct.model_validate(metadata.latest_version_saved_data)
+    return DataProductRead.model_validate(metadata.latest_version_saved_data)
 
 
 @router.get("/schemas/{data_product_name}/{table_name}")
-async def get_schema(data_product_name: str, table_name: str) -> Schema:
+async def get_schema(data_product_name: str, table_name: str) -> SchemaRead:
     logger.add_data_product(data_product_name, table_name)
 
     schema = DataProductSchema(
@@ -52,4 +52,4 @@ async def get_schema(data_product_name: str, table_name: str) -> Schema:
         raise HTTPException(status_code=404, detail=message)
 
     formatted = format_table_schema(schema.latest_version_saved_data)
-    return Schema.model_validate(formatted)
+    return SchemaRead.model_validate(formatted)

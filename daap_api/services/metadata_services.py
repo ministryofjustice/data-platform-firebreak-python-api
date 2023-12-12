@@ -10,8 +10,8 @@ import botocore
 from dataengineeringutils3.s3 import read_json_from_s3
 from pydantic import ValidationError
 
-from ..models.data_product import DataProduct
-from ..models.schema import Schema
+from ..models.data_product import DataProductCreate
+from ..models.schema import SchemaRead
 from .data_platform_logging import DataPlatformLogger
 from .data_platform_paths import (
     BucketPath,
@@ -234,7 +234,7 @@ class DataProductSchema(BaseJsonSchema):
     schema json files relating to data product tables
     """
 
-    model_class = Schema
+    model_class = SchemaRead
 
     def __init__(
         self,
@@ -406,7 +406,7 @@ class DataProductMetadata(BaseJsonSchema):
     schema json files relating to data products as a whole
     """
 
-    model_class = DataProduct
+    model_class = DataProductCreate
 
     def __init__(
         self,
