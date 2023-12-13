@@ -8,6 +8,7 @@ from ..services.data_product_metadata import (
     DataProductSchema,
     format_table_schema,
 )
+import time
 
 router = APIRouter()
 
@@ -66,7 +67,10 @@ async def post_data_product(request: Request):
     logger.add_data_product(data_product_name)
     logger.info(f"headers: {request.headers}")
     logger.info(f"body: {request_body_dict}")
-    return {"data_product_name": request_body_dict["metadata"]["name"]}
+    return {
+        "data_product_name": request_body_dict["metadata"]["name"],
+        "time": time.time(),
+    }
 
 
 @router.post(
@@ -81,4 +85,8 @@ async def post_schema(request: Request, data_product_name: str):
     logger.add_data_product(data_product_name, table_name)
     print(f"headers: {request.headers}")
     print(f"body: {request_body_dict}")
-    return {"data_product_name": data_product_name, "table_name": table_name}
+    return {
+        "data_product_name": data_product_name,
+        "table_name": table_name,
+        "time": time.time(),
+    }
