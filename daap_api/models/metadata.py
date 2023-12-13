@@ -75,6 +75,7 @@ class DataProductBase(SQLModel):
         description="The name of the Data Product. Must contain only lowercase letters, numbers, and the underscore character.",
         schema_extra={"example": "my_data_product"},
         index=True,
+        unique=True,
     )
     description: str = Field(
         description="Detailed description about what functional area this Data Product is representing, what purpose it has and business related information.",

@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.routing import serialize_response
 from fastapi.utils import create_response_field
+from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import select
 
 from ..db import Session, session_dependency
 from ..models.metadata import (
@@ -34,8 +37,27 @@ async def register_data_product(
     )
 
     session.add(data_product_internal)
-    session.commit()
-    session.refresh(data_product_internal)
+
+    try:
+        session.commit()
+        session.refresh(data_product_internal)
+    except IntegrityError:
+        session.rollback()
+        data_product_internal = session.exec(
+            select(DataProductTable).filter_by(name=data_product.name)
+        ).one()
+
+    # Check if the stored version is identical to the one passed in -
+    # if so, we can just return it
+    # TODO: implement idempotency of create requests as a cross-cutting concern
+    # so we don't need the extra logic here
+    if (
+        DataProductCreate.model_validate(data_product_internal, strict=True)
+        != data_product
+    ):
+        raise HTTPException(
+            status_code=409, detail="A data product with this name already exists"
+        )
 
     # TODO: make this transformation less hacky.
     attrs = data_product_internal.model_dump()
