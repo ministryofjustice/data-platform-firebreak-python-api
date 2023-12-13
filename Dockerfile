@@ -3,7 +3,7 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
 WORKDIR /app
 
 # Copy only necessary files
-COPY ./requirements.txt /app/
+COPY ./requirements.txt .
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -14,7 +14,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY ./daap_api ./app/daap_api
+COPY ./daap_api .
 
 # Use a non-root user
 # Use a non-root user
@@ -25,4 +25,4 @@ USER 31337
 
 # Start the application
 EXPOSE 8000
-CMD ["uvicorn", "daap_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
