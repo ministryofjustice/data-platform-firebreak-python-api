@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dp-firebreak-daap-api-deployment
+  name: dp-fb-daap-api-deployment
   labels:
-    app: dp-firebreak-daap-api
+    app: dp-fb-daap-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dp-firebreak-daap-api
+      app: dp-fb-daap-api
   template:
     metadata:
       labels:
-        app: dp-firebreak-daap-api
+        app: dp-fb-daap-api
     spec:
       containers:
-        - name: dp-firebreak-daap-api
+        - name: dp-fb-daap-api
           image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
           ports:
             - name: http
