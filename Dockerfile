@@ -17,8 +17,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./daap_api ./app/daap_api
 
 # Use a non-root user
-RUN addgroup -g 31337 -S appuser && adduser -u 31337 -S appuser -G appuser
-RUN chown -R appuser:appuser /app
+# Use a non-root user
+RUN addgroup --gid 31337 --system appuser \
+  && adduser --uid 31337 --system appuser --ingroup appuser
+RUN chown --recursive appuser:appuser /app
 USER 31337
 
 # Start the application
