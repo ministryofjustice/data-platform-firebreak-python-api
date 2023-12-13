@@ -1,3 +1,5 @@
+from typing import Generator
+
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -11,7 +13,7 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
-def get_session() -> Session:
+def get_session() -> Generator[Session, None, None]:
     """
     FastAPI dependency for the ORM session
     """
