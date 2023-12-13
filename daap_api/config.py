@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     metadata_bucket_name: str = "metadata-development20231011135450514100000004"
     data_bucket_name: str = "data-development20231011135451999500000005"
     landing_zone_bucket_name: str = "data-landing-development20231011135449285800000001"
+    database_uri: str = "sqlite:///dev.db"
 
 
 settings = Settings()

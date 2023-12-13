@@ -30,6 +30,8 @@ class Column(SQLModel):
 
 
 class SchemaBase(SQLModel):
+    __tablename__ = "schemas"
+
     tableDescription: str = Field(
         description="A description of the data contained within the table",
         schema_extra={
@@ -157,6 +159,8 @@ class DataProductRead(DataProductBase):
 
 
 class DataProductTable(DataProductBase, table=True):
+    __tablename__ = "dataproducts"
+
     id: Optional[int] = Field(
         default=None,
         primary_key=True,

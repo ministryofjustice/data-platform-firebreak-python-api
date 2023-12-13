@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 
-from .config import settings
+from .db import create_db_and_tables
 from .routers import ingestion, metadata
 
-app = FastAPI()
+
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(ingestion.router)
 app.include_router(metadata.router)
 
