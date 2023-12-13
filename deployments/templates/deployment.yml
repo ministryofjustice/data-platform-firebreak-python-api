@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dp-firebreak-daap-api-deployment
+  labels:
+    app: dp-firebreak-daap-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dp-firebreak-daap-api
+  template:
+    metadata:
+      labels:
+        app: dp-firebreak-daap-api
+    spec:
+      containers:
+        - name: dp-firebreak-daap-api
+          image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
+          ports:
+            - containerPort: 80
