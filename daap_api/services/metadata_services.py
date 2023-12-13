@@ -10,8 +10,7 @@ import botocore
 from dataengineeringutils3.s3 import read_json_from_s3
 from pydantic import ValidationError
 
-from ..models.data_product import DataProductCreate
-from ..models.schema import SchemaRead
+from ..models.metadata import DataProductCreate, SchemaRead
 from .data_platform_logging import DataPlatformLogger
 from .data_platform_paths import (
     BucketPath,

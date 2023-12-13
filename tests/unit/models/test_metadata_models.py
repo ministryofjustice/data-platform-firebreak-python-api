@@ -3,13 +3,16 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from daap_api.models.data_product import (
+from daap_api.models.metadata import (
+    Column,
     DataProductCreate,
     DataProductRead,
     DataProductTable,
+    SchemaCreate,
+    SchemaRead,
+    SchemaTable,
     Status,
 )
-from daap_api.models.schema import Column, SchemaCreate, SchemaRead, SchemaTable
 
 
 @pytest.fixture(name="session")
@@ -139,7 +142,7 @@ def test_round_trip_schema(session):
     assert read_view == SchemaRead(
         tableDescription=schema_request.tableDescription,
         columns=[
-            {"name": "foo1", "type": "string", "description": "example1"},
-            {"name": "foo2", "type": "int", "description": "example2"},
+            Column(name="foo1", type="string", description="example1"),
+            Column(name="foo2", type="int", description="example2"),
         ],
     )

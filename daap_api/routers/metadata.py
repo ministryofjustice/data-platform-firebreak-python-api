@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from ..models.data_product import DataProductRead
-from ..models.schema import SchemaRead
+from ..models.metadata import DataProductRead, SchemaRead
 from ..services.data_platform_logging import DataPlatformLogger
 from ..services.metadata_services import (
     DataProductMetadata,
