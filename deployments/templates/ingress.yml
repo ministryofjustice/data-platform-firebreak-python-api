@@ -18,6 +18,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: fastapi-service
+                name: $NAMESPACE
                 port:
-                  number: 8000
+                  number: 80

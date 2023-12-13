@@ -7,6 +7,6 @@ spec:
     app: dp-fb-daap-api
   ports:
     - name: http
-      port: 8000
+      port: 80
       targetPort: 8000
       protocol: TCP
