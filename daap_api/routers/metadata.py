@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, status
 
 from ..models.data_product import DataProduct
 from ..models.schema import Schema
@@ -53,3 +53,32 @@ async def get_schema(data_product_name: str, table_name: str) -> Schema:
 
     formatted = format_table_schema(schema.latest_version_saved_data)
     return Schema.model_validate(formatted)
+
+
+@router.post("/data-products", status_code=status.HTTP_201_CREATED)
+async def post_data_product(request: Request):
+    """
+    Registers given metadata for a new data product to the data platform
+    """
+
+    request_body_dict = await request.json()
+    data_product_name = request_body_dict["metadata"]["name"]
+    logger.add_data_product(data_product_name)
+    logger.info(f"headers: {request.headers}")
+    logger.info(f"body: {request_body_dict}")
+    return {"data_product_name": request_body_dict["metadata"]["name"]}
+
+
+@router.post(
+    "/data-products/{data_product_name}/tables", status_code=status.HTTP_201_CREATED
+)
+async def post_schema(request: Request, data_product_name: str):
+    """
+    Registers a given schema for a new table within a data product to the data platform
+    """
+    request_body_dict = await request.json()
+    table_name = request_body_dict["schema"]["tableName"]
+    logger.add_data_product(data_product_name, table_name)
+    print(f"headers: {request.headers}")
+    print(f"body: {request_body_dict}")
+    return {"data_product_name": data_product_name, "table_name": table_name}

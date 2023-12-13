@@ -13,5 +13,6 @@ class Column(BaseModel):
 
 
 class Schema(BaseModel):
+    tableName: str
     tableDescription: str
     columns: list[Column]
