@@ -15,9 +15,9 @@ spec:
       http:
         paths:
           - path: /
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
-                name: dp-fb-daap-api-service
+                name: fastapi-service
                 port:
-                  number: 80
+                  number: 8000
