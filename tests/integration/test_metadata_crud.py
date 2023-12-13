@@ -1,11 +1,35 @@
-from fastapi.testclient import TestClient
+def test_create_metadata(client):
+    response = client.post(
+        "/data-products/",
+        json={
+            "name": "hmpps_use_of_force",
+            "description": "Data product for hmpps_use_of_force dev data",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+            "schemas": [
+                "knex_migrations",
+                "knex_migrations_lock",
+                "report",
+                "report_log",
+                "statement",
+                "statement_amendments",
+                "table",
+            ],
+        },
+    )
 
-from daap_api.main import app
+    assert response.status_code == 200
+    response_data_product = response.json()
+    assert response_data_product["version"] == "v1.0"
+    assert response_data_product["id"] == "dp:hmpps_use_of_force:v1.0"
 
-client = TestClient(app)
 
-
-def test_read_metadata():
+def test_read_metadata(client):
     response = client.get("/data-products/hmpps_use_of_force")
 
     assert response.status_code == 200
@@ -33,7 +57,7 @@ def test_read_metadata():
     }
 
 
-def test_read_schema():
+def test_read_schema(client):
     response = client.get("/schemas/hmpps_use_of_force/statement")
     assert response.status_code == 200
     assert response.json() == {
@@ -63,7 +87,7 @@ def test_read_schema():
     }
 
 
-def test_missing_data_product():
+def test_missing_data_product(client):
     response = client.get("/data-products/hmpps_use_of_the_force")
     assert response.status_code == 404
     assert response.json() == {
@@ -72,7 +96,7 @@ def test_missing_data_product():
     }
 
 
-def test_missing_schema():
+def test_missing_schema(client):
     response = client.get("/schemas/hmpps_use_of_force/missing")
     assert response.status_code == 404
     assert response.json() == {
