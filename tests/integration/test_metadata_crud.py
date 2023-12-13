@@ -7,6 +7,7 @@ client = TestClient(app)
 
 def test_read_metadata():
     response = client.get("/data-products/hmpps_use_of_force")
+
     assert response.status_code == 200
     assert response.json() == {
         "name": "hmpps_use_of_force",
@@ -27,6 +28,8 @@ def test_read_metadata():
             "statement_amendments",
             "table",
         ],
+        "version": "v1.6",
+        "id": "dp:hmpps_use_of_force:v1.6",
     }
 
 
