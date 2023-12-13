@@ -1,3 +1,23 @@
+from daap_api.models.metadata import DataProductTable
+
+
+def data_product():
+    return DataProductTable.model_validate(
+        {
+            "name": "hmpps_use_of_force",
+            "description": "Data product for hmpps_use_of_force dev data",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+            "version": "v1.0",
+        }
+    )
+
+
 def test_create_metadata(client):
     response = client.post(
         "/data-products/",
@@ -29,8 +49,11 @@ def test_create_metadata(client):
     assert response_data_product["id"] == "dp:hmpps_use_of_force:v1.0"
 
 
-def test_read_metadata(client):
-    response = client.get("/data-products/hmpps_use_of_force")
+def test_read_metadata(client, session):
+    session.add(data_product())
+    session.commit()
+
+    response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -43,17 +66,9 @@ def test_read_metadata(client):
         "status": "draft",
         "retentionPeriod": 3000,
         "dpiaRequired": False,
-        "schemas": [
-            "knex_migrations",
-            "knex_migrations_lock",
-            "report",
-            "report_log",
-            "statement",
-            "statement_amendments",
-            "table",
-        ],
-        "version": "v1.6",
-        "id": "dp:hmpps_use_of_force:v1.6",
+        "schemas": [],
+        "version": "v1.0",
+        "id": "dp:hmpps_use_of_force:v1.0",
     }
 
 
@@ -88,12 +103,17 @@ def test_read_schema(client):
 
 
 def test_missing_data_product(client):
-    response = client.get("/data-products/hmpps_use_of_the_force")
+    response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "no existing metadata found in S3 for "
-        "data_product_name='hmpps_use_of_the_force'"
+        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
     }
+
+
+def test_invalid_id(client):
+    response = client.get("/data-products/hmpps_use_of_the_force")
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid id: hmpps_use_of_the_force"}
 
 
 def test_missing_schema(client):

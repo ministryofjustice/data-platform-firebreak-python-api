@@ -6,7 +6,7 @@ from daap_api.db import get_session
 from daap_api.main import app
 
 
-@pytest.fixture(name="client")
+@pytest.fixture()
 def client(session: Session):
     def get_session_override():
         return session
@@ -18,7 +18,7 @@ def client(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="session")
+@pytest.fixture()
 def session():
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool

@@ -140,7 +140,7 @@ class DataProductRead(DataProductBase):
     """
 
     schemas: list[str] = Field(
-        default=None, description="List of schema names defined for this data product"
+        default=[], description="List of schema names defined for this data product"
     )
 
     id: Optional[str] = Field(
