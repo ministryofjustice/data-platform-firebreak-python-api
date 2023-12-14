@@ -10,6 +10,7 @@ from ..models.metadata import (
     DataProductRead,
     DataProductTable,
     SchemaRead,
+    SchemaTable,
     Status,
 )
 from ..services.data_platform_logging import DataPlatformLogger
@@ -80,7 +81,13 @@ async def get_metadata(
     except NoResultFound:
         raise HTTPException(404, f"Data product does not exist with id {id}")
 
-    return DataProductRead.model_validate(data_product_internal, strict=True)
+    attrs = data_product_internal.model_dump()
+
+    attrs["schemas"] = [
+        schema["tableDescription"] for schema in data_product_internal.schemas
+    ]
+
+    return DataProductRead.model_validate(attrs, strict=True)
 
 
 @router.get("/schemas/{data_product_name}/{table_name}")

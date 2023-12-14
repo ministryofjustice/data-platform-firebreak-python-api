@@ -26,6 +26,11 @@ This proof of concept will explore migrating the DaaP API to a single python con
 - `poetry run pytest`
 - `poetry run pytest tests/unit` to just run the unit tests
 
+### Running a shell
+
+- Python: `poetry run python -i -m daap_api.main`
+- PSQL: `docker-compose exec -u postgres postgres_db psql daap_api_dev`
+
 **Note**: the integration tests currently assume you have AWS environment variables set.
 
 ## Included Files
