@@ -32,6 +32,12 @@ class Column(SQLModel):
 class SchemaBase(SQLModel):
     __tablename__ = "schemas"
 
+    name: str = Field(
+        regex=r"^[a-z0-9_]+$",
+        description="The name of the table.",
+        schema_extra={"pattern": r"^[a-z0-9_]+$"},
+    )
+
     tableDescription: str = Field(
         description="A description of the data contained within the table",
         schema_extra={
@@ -45,11 +51,11 @@ class SchemaBase(SQLModel):
 
 
 class SchemaCreate(SchemaBase):
-    pass
+    data_product_id: str
 
 
 class SchemaRead(SchemaBase):
-    pass
+    data_product_id: str
 
 
 class SchemaTable(SchemaBase, table=True):

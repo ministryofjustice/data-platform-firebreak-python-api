@@ -9,6 +9,7 @@ from ..models.metadata import (
     DataProductCreate,
     DataProductRead,
     DataProductTable,
+    SchemaCreate,
     SchemaRead,
     SchemaTable,
     Status,
@@ -29,6 +30,10 @@ logger = DataPlatformLogger()
 def parse_external_id(id) -> Tuple[str, str]:
     _, name, version = id.split(":")
     return name, version
+
+
+def generate_external_id(data_product_name, version):
+    return f"dp:{data_product_name}:{version}"
 
 
 @router.post("/data-products/")
@@ -84,10 +89,31 @@ async def get_metadata(
     attrs = data_product_internal.model_dump()
 
     attrs["schemas"] = [
-        schema["tableDescription"] for schema in data_product_internal.schemas
+        schema.tableDescription for schema in data_product_internal.schemas
     ]
 
     return DataProductRead.model_validate(attrs, strict=True)
+
+
+@router.post("/schemas/")
+async def create_schema(
+    schema: SchemaCreate,
+    session: Session = session_dependency,
+) -> SchemaRead:
+    schema_internal = SchemaTable.model_validate(schema, strict=True)
+
+    session.add(schema)
+
+    try:
+        session.commit()
+        session.refresh(schema_internal)
+    except IntegrityError:
+        session.rollback()
+        schema_internal = session.exec(
+            select(SchemaTable).join(DataProductTable).filter_by(name=schema.name)
+        ).one()
+
+    return SchemaRead.model_validate(schema_internal)
 
 
 @router.get("/schemas/{data_product_name}/{table_name}")
@@ -109,4 +135,8 @@ async def get_schema(data_product_name: str, table_name: str) -> SchemaRead:
         raise HTTPException(status_code=404, detail=message)
 
     formatted = format_table_schema(schema.latest_version_saved_data)
+    formatted["name"] = table_name
+    formatted["data_product_id"] = generate_external_id(
+        data_product_name, schema.version
+    )
     return SchemaRead.model_validate(formatted, strict=True)
