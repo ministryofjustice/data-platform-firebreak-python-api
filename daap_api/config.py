@@ -35,11 +35,6 @@ class Settings(BaseSettings):
             self.SCOPE_NAME: self.SCOPE_DESCRIPTION,
         }
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
-
 
 settings = Settings()
 
