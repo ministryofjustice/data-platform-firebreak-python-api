@@ -1,6 +1,7 @@
 name: deploy
 
 on:
+  pull_request:
   push:
     branches: [main]
 
@@ -18,6 +19,10 @@ jobs:
           aws-region: ${{ vars.ECR_REGION }}
       - uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
+      - uses: divideprojects/poetry-export-requirements-action@v1
+        with:
+          without-hashes: true
+          outfile-name: requirements.txt
       - run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

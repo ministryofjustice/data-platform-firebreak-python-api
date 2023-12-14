@@ -10,3 +10,4 @@ env/
 terraform.tfstate
 __pycache__
 *.db
+requirements*
