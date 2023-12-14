@@ -1,5 +1,7 @@
+import os
 from os import environ
 
+from pydantic import AnyHttpUrl, computed_field
 from pydantic_settings import BaseSettings
 
 
@@ -9,11 +11,38 @@ class Settings(BaseSettings):
     metadata_bucket_name: str = "metadata-development20231011135450514100000004"
     data_bucket_name: str = "data-development20231011135451999500000005"
     landing_zone_bucket_name: str = "data-landing-development20231011135449285800000001"
-    database_uri: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_dev"  # pragma: allowlist secret
+    database_uri: str = os.getenv(
+        key="DATABASE_URL",
+        default="postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_dev",  # pragma: allowlist secret
+    )
     database_uri_test: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_test"  # pragma: allowlist secret
+
+    BACKEND_CORS_ORIGINS: list[str | AnyHttpUrl] = ["http://localhost:8000"]
+    OPENAPI_CLIENT_ID: str = ""
+    APP_CLIENT_ID: str = ""
+    TENANT_ID: str = ""
+    SCOPE_DESCRIPTION: str = "user_impersonation"
+
+    @computed_field
+    @property
+    def SCOPE_NAME(self) -> str:
+        return f"api://{self.APP_CLIENT_ID}/{self.SCOPE_DESCRIPTION}"
+
+    @computed_field
+    @property
+    def SCOPES(self) -> dict:
+        return {
+            self.SCOPE_NAME: self.SCOPE_DESCRIPTION,
+        }
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
 
 
 settings = Settings()
+
 
 # Backwards compatability with old code
 environ["LOG_BUCKET"] = settings.log_bucket_name
