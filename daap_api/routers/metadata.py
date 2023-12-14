@@ -35,9 +35,7 @@ async def register_data_product(
     data_product: DataProductCreate,
     session: Session = session_dependency,
 ) -> DataProductRead:
-    data_product_internal = DataProductTable.model_validate(
-        data_product.model_dump() | {"version": "v1.0"}, strict=True
-    )
+    data_product_internal = DataProductTable.model_validate(data_product, strict=True)
 
     session.add(data_product_internal)
 
