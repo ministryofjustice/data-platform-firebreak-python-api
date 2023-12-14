@@ -60,11 +60,7 @@ async def register_data_product(
             status_code=409, detail="A data product with this name already exists"
         )
 
-    # TODO: make this transformation less hacky.
-    attrs = data_product_internal.model_dump()
-    del attrs["id"]
-    attrs["version"] = "v1.0"
-    return DataProductRead.model_validate(attrs)
+    return DataProductRead.model_validate(data_product_internal)
 
 
 @router.get("/data-products/{id}")
@@ -84,9 +80,7 @@ async def get_metadata(
     except NoResultFound:
         raise HTTPException(404, f"Data product does not exist with id {id}")
 
-    attrs = data_product_internal.model_dump()
-    attrs["id"] = id
-    return DataProductRead.model_validate(attrs, strict=True)
+    return DataProductRead.model_validate(data_product_internal, strict=True)
 
 
 @router.get("/schemas/{data_product_name}/{table_name}")
