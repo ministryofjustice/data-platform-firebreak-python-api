@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     metadata_bucket_name: str = "metadata-development20231011135450514100000004"
     data_bucket_name: str = "data-development20231011135451999500000005"
     landing_zone_bucket_name: str = "data-landing-development20231011135449285800000001"
-    database_uri: str = "sqlite:///dev.db"
-    database_uri_test: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_dev"  # pragma: allowlist secret
+    database_uri: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_dev"  # pragma: allowlist secret
+    database_uri_test: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_test"  # pragma: allowlist secret
 
 
 settings = Settings()
