@@ -896,3 +896,4 @@ wrapt==1.16.0 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:f6b2d0c6703c988d334f297aa5df18c45e97b0af3679bb75059e0e0bd8b1069d \
     --hash=sha256:f8212564d49c50eb4565e502814f694e240c55551a5f1bc841d4fcaabb0a9b8a \
     --hash=sha256:ffa565331890b90056c01db69c0fe634a776f8019c143a5ae265f9c6bc4bd6d4
+psycopg[binary]==3.1.14
