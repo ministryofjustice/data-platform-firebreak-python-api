@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
+from daap_api.config import settings
 from daap_api.models.metadata import (
     Column,
     DataProductCreate,
@@ -17,12 +18,11 @@ from daap_api.models.metadata import (
 
 @pytest.fixture(name="session")
 def session_fixture():
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+    engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+        SQLModel.metadata.drop_all(engine)
 
 
 def test_create_data_product(session):

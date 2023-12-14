@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, StaticPool, create_engine
 
+from daap_api.config import settings
 from daap_api.db import get_session
 from daap_api.main import app
 
@@ -20,9 +21,8 @@ def client(session: Session):
 
 @pytest.fixture()
 def session():
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+    engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+        SQLModel.metadata.drop_all(engine)

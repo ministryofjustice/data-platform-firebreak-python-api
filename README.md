@@ -6,15 +6,27 @@ This proof of concept will explore migrating the DaaP API to a single python con
 
 ## Getting started
 
-- This project requires python 3.11.
-- Run `poetry install`
+### Dependencies
+
+- This project requires python 3.11 and Postgres.
+- To run postgres locally via docker, run `docker-compose up -d`
+- Run `poetry install` to install python dependencies
+
+### Starting the API
+
 - Run `poetry run uvicorn daap_api.main:app --reload`
 - The API is served at http://127.0.0.1:8000/
 - Example endpoint: http://localhost:8000/data-products/hmpps_use_of_force
 - The docs are served at http://127.0.0.1:8000/redoc
-- Run the tests: `poetry run pytest`
 
 **Note**: metadata endpoints currently assume you have AWS environment variables set.
+
+### Running the tests
+
+- `poetry run pytest`
+- `poetry run pytest tests/unit` to just run the unit tests
+
+**Note**: the integration tests currently assume you have AWS environment variables set.
 
 ## Included Files
 

@@ -20,6 +20,7 @@ pydantic-settings = "^2.1.0"
 httpx = "^0.25.2"
 sqlmodel = "^0.0.14"
 sqlalchemy = "^2.0.23"
+psycopg = {extras = ["binary"], version = "^3.1.14"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
