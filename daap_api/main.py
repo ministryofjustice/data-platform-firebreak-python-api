@@ -20,7 +20,7 @@ app = FastAPI(
     swagger_ui_oauth2_redirect_url="/oauth2-redirect",
     swagger_ui_init_oauth={
         "usePkceWithAuthorizationCodeGrant": True,
-        "clientId": settings.OPENAPI_CLIENT_ID,
+        "clientId": settings.AZURE_OPENAPI_CLIENT_ID,
     },
 )
 app.include_router(ingestion.router)
@@ -38,8 +38,8 @@ if settings.BACKEND_CORS_ORIGINS:
 
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
-    app_client_id=settings.APP_CLIENT_ID,
-    tenant_id=settings.TENANT_ID,
+    app_client_id=settings.AZURE_APP_CLIENT_ID,
+    tenant_id=settings.AZURE_TENANT_ID,
     scopes=settings.SCOPES,
 )
 

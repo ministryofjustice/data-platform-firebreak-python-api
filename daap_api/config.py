@@ -18,15 +18,15 @@ class Settings(BaseSettings):
     database_uri_test: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_test"  # pragma: allowlist secret
 
     BACKEND_CORS_ORIGINS: list[str | AnyHttpUrl] = ["http://localhost:8000"]
-    OPENAPI_CLIENT_ID: str = ""
-    APP_CLIENT_ID: str = ""
-    TENANT_ID: str = ""
+    AZURE_OPENAPI_CLIENT_ID: str = ""
+    AZURE_APP_CLIENT_ID: str = ""
+    AZURE_TENANT_ID: str = ""
     SCOPE_DESCRIPTION: str = "user_impersonation"
 
     @computed_field
     @property
     def SCOPE_NAME(self) -> str:
-        return f"api://{self.APP_CLIENT_ID}/{self.SCOPE_DESCRIPTION}"
+        return f"api://{self.AZURE_APP_CLIENT_ID}/{self.SCOPE_DESCRIPTION}"
 
     @computed_field
     @property
