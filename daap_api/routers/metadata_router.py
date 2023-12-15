@@ -1,7 +1,8 @@
 from typing import Tuple
 
+import structlog
 from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from ..db import Session, session_dependency
@@ -17,8 +18,7 @@ from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
 
-# TODO: treat this is an application dependency - or replace with something else
-logger = DataPlatformLogger()
+logger = structlog.get_logger(__name__)
 
 
 def parse_data_product_id(id) -> Tuple[str, str]:
