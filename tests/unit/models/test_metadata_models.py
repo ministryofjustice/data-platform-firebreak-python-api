@@ -5,8 +5,7 @@ from sqlmodel.pool import StaticPool
 
 from daap_api.config import settings
 from daap_api.db import Base
-from daap_api.orm_models.metadata import DataProductTable, SchemaTable
-from daap_api.response_models.metadata import (
+from daap_api.models.api.metadata_api_models import (
     Column,
     DataProductCreate,
     DataProductRead,
@@ -14,6 +13,7 @@ from daap_api.response_models.metadata import (
     SchemaRead,
     Status,
 )
+from daap_api.models.orm.metadata_orm_models import DataProductTable, SchemaTable
 
 
 @pytest.fixture(name="session")

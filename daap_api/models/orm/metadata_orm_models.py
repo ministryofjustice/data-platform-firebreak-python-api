@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
 
-from ..db import Base
+from daap_api.db import Base
 
 
 class Status(Enum):

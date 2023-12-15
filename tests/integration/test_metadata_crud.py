@@ -1,4 +1,4 @@
-from daap_api.orm_models.metadata import DataProductTable
+from daap_api.models.orm.metadata_orm_models import DataProductTable
 
 
 def data_product():

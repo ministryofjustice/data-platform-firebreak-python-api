@@ -5,8 +5,12 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import select
 
 from ..db import Session, session_dependency
-from ..orm_models.metadata import DataProductTable
-from ..response_models.metadata import DataProductCreate, DataProductRead, SchemaRead
+from ..models.api.metadata_api_models import (
+    DataProductCreate,
+    DataProductRead,
+    SchemaRead,
+)
+from ..models.orm.metadata_orm_models import DataProductTable
 from ..services.data_platform_logging import DataPlatformLogger
 from ..services.metadata_services import DataProductSchema, format_table_schema
 

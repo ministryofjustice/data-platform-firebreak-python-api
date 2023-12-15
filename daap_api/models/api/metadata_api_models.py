@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import computed_field
 from sqlmodel import Field, SQLModel
 
-from ..orm_models.metadata import Status
+from ..orm.metadata_orm_models import Status
 
 
 class Column(SQLModel):
