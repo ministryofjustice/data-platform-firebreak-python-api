@@ -5,19 +5,14 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import select
 
 from ..db import Session, session_dependency
-from ..models.metadata import (
+from ..models.api.metadata_api_models import (
     DataProductCreate,
     DataProductRead,
-    DataProductTable,
     SchemaRead,
-    Status,
 )
+from ..models.orm.metadata_orm_models import DataProductTable
 from ..services.data_platform_logging import DataPlatformLogger
-from ..services.metadata_services import (
-    DataProductMetadata,
-    DataProductSchema,
-    format_table_schema,
-)
+from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
 
@@ -35,7 +30,7 @@ async def register_data_product(
     data_product: DataProductCreate,
     session: Session = session_dependency,
 ) -> DataProductRead:
-    data_product_internal = DataProductTable.model_validate(data_product, strict=True)
+    data_product_internal = DataProductTable(**data_product.model_dump())
 
     session.add(data_product_internal)
 
@@ -44,7 +39,7 @@ async def register_data_product(
         session.refresh(data_product_internal)
     except IntegrityError:
         session.rollback()
-        data_product_internal = session.exec(
+        data_product_internal = session.query(
             select(DataProductTable).filter_by(name=data_product.name)
         ).one()
 
@@ -53,14 +48,16 @@ async def register_data_product(
     # TODO: implement idempotency of create requests as a cross-cutting concern
     # so we don't need the extra logic here
     if (
-        DataProductCreate.model_validate(data_product_internal, strict=True)
+        DataProductCreate.model_validate(
+            data_product_internal.to_attributes(), strict=True
+        )
         != data_product
     ):
         raise HTTPException(
             status_code=409, detail="A data product with this name already exists"
         )
 
-    return DataProductRead.model_validate(data_product_internal)
+    return DataProductRead.model_validate(data_product_internal.to_attributes())
 
 
 @router.get("/data-products/{id}")
@@ -73,11 +70,10 @@ async def get_metadata(
         raise HTTPException(400, detail=f"Invalid id: {id}")
     logger.add_data_product(data_product_name)
 
-    try:
-        data_product_internal = session.exec(
-            select(DataProductTable).filter_by(name=data_product_name, version=version)
-        ).one()
-    except NoResultFound:
+    data_product_internal = session.execute(
+        select(DataProductTable).filter_by(name=data_product_name, version=version)
+    ).scalar()
+    if data_product_internal is None:
         raise HTTPException(404, f"Data product does not exist with id {id}")
 
     return DataProductRead.model_validate(data_product_internal, strict=True)

@@ -1,20 +1,18 @@
-from daap_api.models.metadata import DataProductTable
+from daap_api.models.orm.metadata_orm_models import DataProductTable
 
 
 def data_product():
-    return DataProductTable.model_validate(
-        {
-            "name": "hmpps_use_of_force",
-            "description": "Data product for hmpps_use_of_force dev data",
-            "domain": "HMPPS",
-            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
-            "dataProductOwnerDisplayName": "Data Platform Labs",
-            "email": "dataplatformlabs@digital.justice.gov.uk",
-            "status": "draft",
-            "retentionPeriod": 3000,
-            "dpiaRequired": False,
-            "version": "v1.0",
-        }
+    return DataProductTable(
+        name="hmpps_use_of_force",
+        description="Data product for hmpps_use_of_force dev data",
+        domain="HMPPS",
+        dataProductOwner="dataplatformlabs@digital.justice.gov.uk",
+        dataProductOwnerDisplayName="Data Platform Labs",
+        email="dataplatformlabs@digital.justice.gov.uk",
+        status="draft",
+        retentionPeriod=3000,
+        dpiaRequired=False,
+        version="v1.0",
     )
 
 
@@ -69,6 +67,7 @@ def test_read_metadata(client, session):
         "schemas": [],
         "version": "v1.0",
         "id": "dp:hmpps_use_of_force:v1.0",
+        "tags": {},
     }
 
 

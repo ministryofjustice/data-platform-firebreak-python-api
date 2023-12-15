@@ -1,3 +1,5 @@
+import contextlib
+
 import uvicorn
 from fastapi import FastAPI, Security
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,9 +8,10 @@ from pydantic import AnyHttpUrl, computed_field
 
 from .config import settings
 from .db import create_db_and_tables
-from .routers import ingestion, metadata
+from .routers import ingestion_router, metadata_router
 
 
+@contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
     await azure_scheme.openid_config.load_config()
@@ -23,8 +26,8 @@ app = FastAPI(
         "clientId": settings.AZURE_OPENAPI_CLIENT_ID,
     },
 )
-app.include_router(ingestion.router)
-app.include_router(metadata.router)
+app.include_router(ingestion_router.router)
+app.include_router(metadata_router.router)
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
