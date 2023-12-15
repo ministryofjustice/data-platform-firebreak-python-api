@@ -46,57 +46,25 @@ def test_create_data_product(session):
     assert data_product.id is not None
 
 
-def test_round_trip_data_product(session):
-    """
-    Temporary test for exploring SQLModel
-    """
-    create_request = DataProductCreate(
-        name="data-product",
-        domain="hmpps",
-        description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
-        status=Status.draft,
-        email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
-        tags={"some-tag": "some-value"},
-    )
-
-    data_product = DataProductTable(**create_request.model_dump())
-    session.add(data_product)
-    session.commit()
-    id = data_product.id
-
-    fetched = session.get(DataProductTable, id)
-    read_view = DataProductRead(**fetched.to_attributes())
-    assert read_view == DataProductRead(
-        name="data-product",
-        domain="hmpps",
-        description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
-        status=Status.draft,
-        email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
-        tags={"some-tag": "some-value"},
-        version="v1.0",
-    )
-
-
 def test_create_schema(session):
-    schema_request = SchemaCreate(
-        tableDescription="example schema",
-        columns=[
-            Column(name="foo1", type="string", description="example1"),
-            Column(name="foo2", type="int", description="example2"),
-        ],
+    data_product = DataProductTable(
+        name="data-product",
+        domain="hmpps",
+        description="example data product",
+        dataProductOwner="joe.bloggs@justice.gov.uk",
+        dataProductOwnerDisplayName="Joe bloggs",
+        status=Status.draft,
+        email="data-product-contact@justice.gov.uk",
+        retentionPeriod=365,
+        dpiaRequired=True,
+        tags={"some-tag": "some-value"},
     )
+    session.add(data_product)
 
     schema = SchemaTable(
-        tableDescription=schema_request.tableDescription,
-        columns=[column.model_dump() for column in schema_request.columns],
+        data_product=data_product,
+        tableDescription="example schema",
+        columns=[{"name": "foo1", "type": "string", "description": "example1"}],
         name="my-schema",
     )
     session.add(schema)
@@ -104,36 +72,3 @@ def test_create_schema(session):
     session.refresh(schema)
 
     assert schema.id is not None
-
-
-def test_round_trip_schema(session):
-    """
-    Temporary test for exploring SQLModel
-    """
-    schema_request = SchemaCreate(
-        tableDescription="example schema",
-        columns=[
-            Column(name="foo1", type="string", description="example1"),
-            Column(name="foo2", type="int", description="example2"),
-        ],
-    )
-
-    schema = SchemaTable(
-        tableDescription=schema_request.tableDescription,
-        columns=[column.model_dump() for column in schema_request.columns],
-        name="my-schema",
-    )
-    session.add(schema)
-    session.commit()
-    id = schema.id
-
-    fetched = session.get(SchemaTable, id)
-    read_view = SchemaRead.model_validate(fetched.to_attributes())
-
-    assert read_view == SchemaRead(
-        tableDescription=schema_request.tableDescription,
-        columns=[
-            Column(name="foo1", type="string", description="example1"),
-            Column(name="foo2", type="int", description="example2"),
-        ],
-    )

@@ -2,7 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
 from daap_api.db import Base
@@ -20,6 +21,9 @@ class SchemaTable(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True,
     )
+
+    data_product_id: Mapped[int] = mapped_column(ForeignKey("dataproducts.id"))
+    data_product: Mapped["DataProductTable"] = relationship(back_populates="schemas")
 
     name: Mapped[str]
 
@@ -47,6 +51,9 @@ class DataProductTable(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True,
     )
+
+    schemas: Mapped[list["SchemaTable"]] = relationship(back_populates="data_product")
+
     name: Mapped[str] = mapped_column(
         index=True,
         unique=True,
