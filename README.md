@@ -28,6 +28,11 @@ This proof of concept will explore migrating the DaaP API to a single python con
 
 **Note**: the integration tests currently assume you have AWS environment variables set.
 
+### Opening a shell
+
+- Python: `poetry run python -i -m daap_api.main`
+- PSQL: `docker-compose exec -u postgres postgres_db psql daap_api_dev`
+
 ## Included Files
 
 The repository comes with the following preset files:
