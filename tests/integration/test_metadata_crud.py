@@ -1,4 +1,5 @@
 import pytest
+from fastapi import status
 
 from daap_api.models.orm.metadata_orm_models import DataProductTable, SchemaTable
 
@@ -99,7 +100,7 @@ def test_create_metadata(client):
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     response_data_product = response.json()
     assert response_data_product["version"] == "v1.0"
     assert response_data_product["id"] == "dp:hmpps_use_of_force:v1.0"
@@ -111,7 +112,7 @@ def test_read_metadata(client, session):
 
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "name": "hmpps_use_of_force",
         "description": "Data product for hmpps_use_of_force dev data",
@@ -140,7 +141,7 @@ def test_create_schema(client, session, statement_columns):
             "columns": statement_columns,
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "tableDescription": "statement desc",
         "columns": statement_columns,
@@ -155,7 +156,7 @@ def test_create_schema_for_non_existent_product(client, session, statement_colum
             "columns": statement_columns,
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_create_schema_that_already_exists(client, session, statement_columns):
@@ -172,7 +173,7 @@ def test_create_schema_that_already_exists(client, session, statement_columns):
             "columns": statement_columns,
         },
     )
-    assert response.status_code == 409
+    assert response.status_code == status.HTTP_409_CONFLICT
 
 
 def test_read_schema(client, statement_columns, session):
@@ -184,7 +185,7 @@ def test_read_schema(client, statement_columns, session):
 
     response = client.get("/schemas/dp:hmpps_use_of_force:v1.0:statement")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "tableDescription": "desc",
         "columns": statement_columns,
@@ -200,13 +201,13 @@ def test_read_data_product_with_schema(client, statement_columns, session):
 
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()["schemas"] == ["statement"]
 
 
 def test_missing_data_product(client):
     response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
         "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
     }
@@ -214,13 +215,13 @@ def test_missing_data_product(client):
 
 def test_invalid_id(client):
     response = client.get("/data-products/hmpps_use_of_the_force")
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json() == {"detail": "Invalid id: hmpps_use_of_the_force"}
 
 
 def test_missing_schema(client):
     response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
         "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
     }

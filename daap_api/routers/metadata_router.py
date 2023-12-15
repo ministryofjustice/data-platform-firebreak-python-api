@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import select
 
@@ -60,7 +60,8 @@ async def register_data_product(
         != data_product
     ):
         raise HTTPException(
-            status_code=409, detail="A data product with this name already exists"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A data product with this name already exists",
         )
 
     return DataProductRead.model_validate(data_product_internal.to_attributes())
@@ -73,14 +74,16 @@ async def get_metadata(
     try:
         data_product_name, version = parse_data_product_id(id)
     except ValueError:
-        raise HTTPException(400, detail=f"Invalid id: {id}")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
     logger.add_data_product(data_product_name)
 
     data_product_internal = session.execute(
         select(DataProductTable).filter_by(name=data_product_name, version=version)
     ).scalar()
     if data_product_internal is None:
-        raise HTTPException(404, f"Data product does not exist with id {id}")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, f"Data product does not exist with id {id}"
+        )
 
     return DataProductRead.model_validate(
         data_product_internal.to_attributes(), strict=True
@@ -99,7 +102,8 @@ async def create_schema(
 
     if data_product_internal is None:
         raise HTTPException(
-            404, f"id {id} references a data product that does not exist"
+            status.HTTP_404_NOT_FOUND,
+            f"id {id} references a data product that does not exist",
         )
 
     schema_internal = SchemaTable(
@@ -112,7 +116,9 @@ async def create_schema(
         session.refresh(data_product_internal)
     except IntegrityError:
         session.rollback()
-        raise HTTPException(409, f"A schema with this name already exists")
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, f"A schema with this name already exists"
+        )
 
     return SchemaRead.model_validate(schema_internal.to_attributes())
 
@@ -130,7 +136,8 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
 
     if schema_internal is None:
         raise HTTPException(
-            404, f"id {id} references a schema version that does not exist"
+            status.HTTP_404_NOT_FOUND,
+            f"id {id} references a schema version that does not exist",
         )
 
     return SchemaRead.model_validate(schema_internal.to_attributes(), strict=True)
