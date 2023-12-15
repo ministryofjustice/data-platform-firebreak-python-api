@@ -25,7 +25,10 @@ class SchemaTable(Base):
     data_product_id: Mapped[int] = mapped_column(ForeignKey("dataproducts.id"))
     data_product: Mapped["DataProductTable"] = relationship(back_populates="schemas")
 
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(
+        index=True,
+        unique=True,
+    )
 
     tableDescription: Mapped[str]
 
