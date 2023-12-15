@@ -90,9 +90,11 @@ async def create_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
 ) -> SchemaRead:
     data_product_name, version, table_name = parse_schema_id(id)
+
     data_product_internal = session.execute(
         select(DataProductTable).filter_by(name=data_product_name, version=version)
     ).scalar()
+
     if data_product_internal is None:
         raise HTTPException(
             404, f"id {id} references a data product that does not exist"
@@ -113,23 +115,20 @@ async def create_schema(
     return SchemaRead.model_validate(schema_internal.to_attributes())
 
 
-@router.get("/schemas/{data_product_name}/{table_name}")
-async def get_schema(data_product_name: str, table_name: str) -> SchemaRead:
-    logger.add_data_product(data_product_name, table_name)
+@router.get("/schemas/{id}")
+async def get_schema(id: str, session: Session = session_dependency) -> SchemaRead:
+    data_product_name, version, table_name = parse_schema_id(id)
+    schema_internal = session.execute(
+        select(SchemaTable)
+        .join(DataProductTable)
+        .where(SchemaTable.name == table_name)
+        .where(DataProductTable.name == data_product_name)
+        .where(DataProductTable.version == version)
+    ).scalar()
 
-    schema = DataProductSchema(
-        data_product_name=data_product_name,
-        table_name=table_name,
-        logger=logger,
-        input_data=None,
-    ).load()
-
-    if not schema.exists:
-        message = (
-            f"no existing schema found in S3 for {data_product_name=}, {table_name=}"
+    if schema_internal is None:
+        raise HTTPException(
+            404, f"id {id} references a schema version that does not exist"
         )
-        logger.error(message)
-        raise HTTPException(status_code=404, detail=message)
 
-    formatted = format_table_schema(schema.latest_version_saved_data)
-    return SchemaRead.model_validate(formatted, strict=True)
+    return SchemaRead.model_validate(schema_internal.to_attributes(), strict=True)
