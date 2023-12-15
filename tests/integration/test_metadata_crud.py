@@ -191,6 +191,19 @@ def test_read_schema(client, statement_columns, session):
     }
 
 
+def test_read_data_product_with_schema(client, statement_columns, session):
+    existing_data_product = data_product()
+    existing_schema = schema(existing_data_product)
+    session.add(existing_data_product)
+    session.add(existing_schema)
+    session.commit()
+
+    response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
+
+    assert response.status_code == 200
+    assert response.json()["schemas"] == ["statement"]
+
+
 def test_missing_data_product(client):
     response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
     assert response.status_code == 404

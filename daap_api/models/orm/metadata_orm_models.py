@@ -104,4 +104,5 @@ class DataProductTable(Base):
             "lastUpdated": self.lastUpdated,
             "s3Location": self.s3Location,
             "rowCount": self.rowCount,
+            "schemas": [schema.name for schema in self.schemas],
         }
