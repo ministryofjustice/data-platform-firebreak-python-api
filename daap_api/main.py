@@ -2,7 +2,7 @@ import contextlib
 import hashlib
 import json
 
-import uvicorn
+import structlog
 from fastapi import FastAPI, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
@@ -23,6 +23,8 @@ async def lifespan(app: FastAPI):
 
     if settings.auth_enabled:
         await azure_scheme.openid_config.load_config()
+    log = structlog.get_logger(__name__)
+    log.info("example")
 
     yield
 
