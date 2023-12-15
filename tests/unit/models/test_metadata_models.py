@@ -1,17 +1,17 @@
 import pytest
-from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from sqlmodel.pool import StaticPool
 
 from daap_api.config import settings
-from daap_api.models.metadata import (
+from daap_api.db import Base
+from daap_api.orm_models.metadata import DataProductTable, SchemaTable
+from daap_api.response_models.metadata import (
     Column,
     DataProductCreate,
     DataProductRead,
-    DataProductTable,
     SchemaCreate,
     SchemaRead,
-    SchemaTable,
     Status,
 )
 
@@ -19,10 +19,10 @@ from daap_api.models.metadata import (
 @pytest.fixture(name="session")
 def session_fixture():
     engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
-    SQLModel.metadata.create_all(engine)
+    Base.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
-        SQLModel.metadata.drop_all(engine)
+        Base.metadata.drop_all(engine)
 
 
 def test_create_data_product(session):
@@ -32,15 +32,13 @@ def test_create_data_product(session):
         description="example data product",
         dataProductOwner="joe.bloggs@justice.gov.uk",
         dataProductOwnerDisplayName="Joe bloggs",
-        status=Status.DRAFT,
+        status=Status.draft,
         email="data-product-contact@justice.gov.uk",
         retentionPeriod=365,
         dpiaRequired=True,
     )
 
-    data_product = DataProductTable.model_validate(
-        create_request.model_dump() | {"version": "v1.0"}
-    )
+    data_product = DataProductTable(**create_request.model_dump())
     session.add(data_product)
     session.commit()
     session.refresh(data_product)
@@ -58,36 +56,30 @@ def test_round_trip_data_product(session):
         description="example data product",
         dataProductOwner="joe.bloggs@justice.gov.uk",
         dataProductOwnerDisplayName="Joe bloggs",
-        status=Status.DRAFT,
+        status=Status.draft,
         email="data-product-contact@justice.gov.uk",
         retentionPeriod=365,
         dpiaRequired=True,
         tags={"some-tag": "some-value"},
     )
 
-    data_product = DataProductTable.model_validate(
-        create_request.model_dump() | {"version": "v1.0"}
-    )
+    data_product = DataProductTable(**create_request.model_dump())
     session.add(data_product)
     session.commit()
     id = data_product.id
-    external_id = f"dp:data-product:v1.0"
 
     fetched = session.get(DataProductTable, id)
-    read_view = DataProductRead.model_validate(
-        fetched.model_dump() | {"id": external_id}
-    )
+    read_view = DataProductRead(**fetched.to_attributes())
     assert read_view == DataProductRead(
         name="data-product",
         domain="hmpps",
         description="example data product",
         dataProductOwner="joe.bloggs@justice.gov.uk",
         dataProductOwnerDisplayName="Joe bloggs",
-        status=Status.DRAFT,
+        status=Status.draft,
         email="data-product-contact@justice.gov.uk",
         retentionPeriod=365,
         dpiaRequired=True,
-        id=external_id,
         tags={"some-tag": "some-value"},
         version="v1.0",
     )
@@ -102,11 +94,10 @@ def test_create_schema(session):
         ],
     )
 
-    schema = SchemaTable.model_validate(
-        {
-            "tableDescription": schema_request.tableDescription,
-            "columns": [column.model_dump() for column in schema_request.columns],
-        }
+    schema = SchemaTable(
+        tableDescription=schema_request.tableDescription,
+        columns=[column.model_dump() for column in schema_request.columns],
+        name="my-schema",
     )
     session.add(schema)
     session.commit()
@@ -127,18 +118,17 @@ def test_round_trip_schema(session):
         ],
     )
 
-    schema = SchemaTable.model_validate(
-        {
-            "tableDescription": schema_request.tableDescription,
-            "columns": [column.model_dump() for column in schema_request.columns],
-        }
+    schema = SchemaTable(
+        tableDescription=schema_request.tableDescription,
+        columns=[column.model_dump() for column in schema_request.columns],
+        name="my-schema",
     )
     session.add(schema)
     session.commit()
     id = schema.id
 
     fetched = session.get(SchemaTable, id)
-    read_view = SchemaRead.model_validate(fetched.model_dump())
+    read_view = SchemaRead.model_validate(fetched.to_attributes())
 
     assert read_view == SchemaRead(
         tableDescription=schema_request.tableDescription,
