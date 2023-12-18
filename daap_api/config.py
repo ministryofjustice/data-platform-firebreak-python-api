@@ -2,7 +2,7 @@ import os
 from os import environ
 
 from pydantic import AnyHttpUrl, computed_field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,11 +17,14 @@ class Settings(BaseSettings):
     )
     database_uri_test: str = "postgresql+psycopg://postgres:postgres123@localhost:5432/daap_api_test"  # pragma: allowlist secret
 
+    auth_enabled: bool = True
     BACKEND_CORS_ORIGINS: list[str | AnyHttpUrl] = ["http://localhost:8000"]
     AZURE_OPENAPI_CLIENT_ID: str = os.getenv("AZURE_OPENAPI_CLIENT_ID", "")
     AZURE_APP_CLIENT_ID: str = os.getenv("AZURE_APP_CLIENT_ID", "")
     AZURE_TENANT_ID: str = os.getenv("AZURE_TENANT_ID", "")
     SCOPE_DESCRIPTION: str = "user_impersonation"
+
+    model_config = SettingsConfigDict(env_file=".env")
 
     @computed_field
     @property

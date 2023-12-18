@@ -1,19 +1,18 @@
 import contextlib
+import hashlib
+import json
 
 import uvicorn
 from fastapi import FastAPI, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
+from idempotency_header_middleware import IdempotencyHeaderMiddleware
+from idempotency_header_middleware.backends import MemoryBackend
 from pydantic import AnyHttpUrl, computed_field
 
 from .config import settings
 from .db import create_db_and_tables
 from .routers import ingestion_router, metadata_router
-import hashlib
-import json
-
-from idempotency_header_middleware import IdempotencyHeaderMiddleware
-from idempotency_header_middleware.backends import MemoryBackend
 
 IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
 
@@ -21,7 +20,10 @@ IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
-    await azure_scheme.openid_config.load_config()
+
+    if settings.auth_enabled:
+        await azure_scheme.openid_config.load_config()
+
     yield
 
 
@@ -39,8 +41,7 @@ app.include_router(metadata_router.router)
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin)
-                       for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

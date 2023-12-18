@@ -13,6 +13,14 @@ This proof of concept will explore migrating the DaaP API to a single python con
 - Run `poetry install` to install python dependencies
 - Run `poetry run alembic head` to create the development database tables
 
+### Configuration
+
+Any environment variables set in the `.env` file will overwrite the configuration.
+
+e.g. to disable Azure Active Directory authentication:
+
+`echo AUTH_ENABLED=False >> .env`
+
 ### Starting the API
 
 - Run `poetry run uvicorn daap_api.main:app --reload`
