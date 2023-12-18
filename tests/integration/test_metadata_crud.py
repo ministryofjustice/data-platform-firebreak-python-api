@@ -41,7 +41,8 @@ def schema(data_product):
             {"name": "overdue_date", "type": "string", "description": ""},
             {"name": "in_progress", "type": "string", "description": ""},
             {"name": "deleted", "type": "string", "description": ""},
-            {"name": "removal_requested_reason", "type": "string", "description": ""},
+            {"name": "removal_requested_reason",
+                "type": "string", "description": ""},
             {"name": "removal_requested_date", "type": "string", "description": ""},
         ],
         tableDescription="desc",
@@ -225,3 +226,32 @@ def test_missing_schema(client):
     assert response.json() == {
         "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
     }
+
+
+def test_idempotent_request(client):
+    for _ in range(2):
+        response = client.post(
+            "/data-products/",
+            json={
+                "name": "hmpps_use_of_force",
+                "description": "Data product for hmpps_use_of_force dev data",
+                "domain": "HMPPS",
+                "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+                "dataProductOwnerDisplayName": "Data Platform Labs",
+                "email": "dataplatformlabs@digital.justice.gov.uk",
+                "status": "draft",
+                "retentionPeriod": 3000,
+                "dpiaRequired": False,
+                "schemas": [
+                    "knex_migrations",
+                    "knex_migrations_lock",
+                    "report",
+                    "report_log",
+                    "statement",
+                    "statement_amendments",
+                    "table",
+                ],
+            },
+        )
+
+    assert response.headers["idempotent-replayed"] == "true"

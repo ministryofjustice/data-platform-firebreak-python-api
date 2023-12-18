@@ -34,6 +34,36 @@ test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=
 trio = ["trio (<0.22)"]
 
 [[package]]
+name = "asgi-idempotency-header"
+version = "0.2.0"
+description = "Enable idempotent operations for your endpoints."
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "asgi-idempotency-header-0.2.0.tar.gz", hash = "sha256:604b33ebb9517e45cf5872397b25dceb159ba1d4ce0ec6a3d73fd49a0785311e"},
+    {file = "asgi_idempotency_header-0.2.0-py3-none-any.whl", hash = "sha256:fa88898ceae2f365c699f43230d6ae5554d3641495fb9aa91e18141ae858a71b"},
+]
+
+[package.extras]
+all = ["fastapi (>=0.70.0,<0.71.0)", "lupa", "redis (>=4.2,<5.0)", "starlette"]
+fastapi = ["fastapi (>=0.70.0,<0.71.0)"]
+redis = ["lupa", "redis (>=4.2,<5.0)"]
+starlette = ["starlette"]
+
+[[package]]
+name = "async-timeout"
+version = "4.0.3"
+description = "Timeout context manager for asyncio programs"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
+    {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
+]
+
+[[package]]
 name = "attrs"
 version = "23.1.0"
 description = "Classes Without Boilerplate"
@@ -1646,6 +1676,25 @@ files = [
 ]
 
 [[package]]
+name = "redis"
+version = "5.0.1"
+description = "Python client for Redis database and key-value store"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "redis-5.0.1-py3-none-any.whl", hash = "sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f"},
+    {file = "redis-5.0.1.tar.gz", hash = "sha256:0dab495cd5753069d3bc650a0dde8a8f9edde16fc5691b689a566eda58100d0f"},
+]
+
+[package.dependencies]
+async-timeout = {version = ">=4.0.2", markers = "python_full_version <= \"3.11.2\""}
+
+[package.extras]
+hiredis = ["hiredis (>=1.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
+
+[[package]]
 name = "referencing"
 version = "0.32.0"
 description = "JSON Referencing + Python"
@@ -2443,4 +2492,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f08ae658cee1bea3d240c86dcf73790a56bc8bdd6ba330f4e3feb2e631d22e2f"
+content-hash = "f147b1fa4f50d37ab806aa9db142529ff7d0de3ad65c9d16f302d80c08ce3374"
