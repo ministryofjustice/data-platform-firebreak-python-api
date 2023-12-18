@@ -27,7 +27,7 @@ def session_fixture():
 
 def test_create_data_product(session):
     create_request = DataProductCreate(
-        name="data-product",
+        name="data_product",
         domain="hmpps",
         description="example data product",
         dataProductOwner="joe.bloggs@justice.gov.uk",
