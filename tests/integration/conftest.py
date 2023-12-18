@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from daap_api.config import settings
 from daap_api.db import Base, get_session
 from daap_api.main import app
+from daap_api.main import backend as cache_backend
 
 
 @pytest.fixture()
@@ -27,3 +28,5 @@ def session():
     with Session(engine) as session:
         yield session
         Base.metadata.drop_all(engine)
+        cache_backend.response_store.clear()
+        cache_backend.keys.clear()
