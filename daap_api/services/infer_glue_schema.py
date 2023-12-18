@@ -1,7 +1,7 @@
 import copy
+import logging
 import os
 from io import BytesIO
-from logging import Logger
 from typing import BinaryIO
 
 import boto3
@@ -14,6 +14,7 @@ from pyarrow import parquet as pq
 from .data_platform_paths import BucketPath, DataProductElement
 
 s3_client = boto3.client("s3")
+logger = logging.getLogger(__name__)
 
 
 class InferredMetadata:
@@ -54,7 +55,6 @@ class InferredMetadata:
 
 def csv_sample(
     bytes_stream: BinaryIO,
-    logger: Logger,
     sample_size_in_bytes: int = 1_500_000,
 ) -> BinaryIO:
     """
@@ -95,8 +95,7 @@ class GlueSchemaGenerator:
     Generate the glue schema from a data file
     """
 
-    def __init__(self, logger: Logger):
-        self.logger = logger
+    def __init__(self):
         self.ac = ArrowConverter()
         self.gc = GlueConverter()
 
@@ -115,7 +114,6 @@ class GlueSchemaGenerator:
         bytes_stream_final = csv_sample(
             bytes_stream=bytes_stream,
             sample_size_in_bytes=int(sample_size_mb * 1_000_000),
-            logger=self.logger,
         )
 
         # null_values has been set to an empty string as "N/A" was being read as null (in a numeric column), with
@@ -197,7 +195,6 @@ class GlueSchemaGenerator:
 def infer_glue_schema_from_raw_csv(
     file_path: BucketPath,
     data_product_element: DataProductElement,
-    logger: Logger,
     has_headers: bool = True,
     sample_size_mb: float = 1.5,
 ) -> InferredMetadata:
@@ -206,7 +203,7 @@ def infer_glue_schema_from_raw_csv(
     """
     bucket, key = file_path
     file_key = file_path.uri
-    inferer = GlueSchemaGenerator(logger)
+    inferer = GlueSchemaGenerator()
 
     database, table_name = data_product_element.raw_data_table_unique()
     obj = boto3.resource("s3").Object(bucket, key)

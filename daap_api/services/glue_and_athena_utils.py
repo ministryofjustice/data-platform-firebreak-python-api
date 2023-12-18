@@ -1,5 +1,5 @@
+import logging
 import time
-from logging import Logger
 
 import boto3
 from botocore.client import BaseClient
@@ -8,10 +8,11 @@ from botocore.exceptions import ClientError
 glue_client = boto3.client("glue")
 athena_client = boto3.client("athena")
 
+logger = logging.getLogger(__name__)
+
 
 def create_database(
     database_name: str,
-    logger: Logger,
     db_meta: dict | None = None,
     client: BaseClient = None,
 ) -> None:
@@ -35,7 +36,7 @@ def create_database(
             raise
 
 
-def get_database(database_name: str, logger: Logger) -> dict | None:
+def get_database(database_name: str) -> dict | None:
     """Get the database for the given database name"""
     try:
         database = glue_client.get_database(Name=database_name)
@@ -50,12 +51,12 @@ def get_database(database_name: str, logger: Logger) -> dict | None:
         return database
 
 
-def database_exists(database_name: str, logger: Logger) -> bool:
+def database_exists(database_name: str) -> bool:
     """Check if a database exists with the given name"""
-    return get_database(database_name=database_name, logger=logger) is not None
+    return get_database(database_name=database_name) is not None
 
 
-def delete_database(database_name: str, logger: Logger) -> None:
+def delete_database(database_name: str) -> None:
     """Delete a glue database with the given database name"""
     try:
         glue_client.delete_database(Name=database_name)
@@ -67,20 +68,18 @@ def delete_database(database_name: str, logger: Logger) -> None:
             raise
 
 
-def clone_database(
-    existing_database_name: str, new_database_name: str, logger: Logger
-) -> None:
+def clone_database(existing_database_name: str, new_database_name: str) -> None:
     """
     Make a copy of a database with a new name, copying all metadata except ids and timestamps.
 
     This function makes a new empty database with the same metadata definition, note it does NOT copy any of the
     tables or data within a database.
     """
-    current_database = get_database(database_name=existing_database_name, logger=logger)
+    current_database = get_database(database_name=existing_database_name)
     if current_database is None:
         raise ValueError(f"Database {existing_database_name} does not exist")
 
-    current_tables = list_tables(database_name=existing_database_name, logger=logger)
+    current_tables = list_tables(database_name=existing_database_name)
 
     database = current_database["Database"]
     database_keys_to_keep = ["Name", "Description", "LocationUri", "Parameters"]
@@ -92,7 +91,6 @@ def clone_database(
     create_glue_database(
         database_name=new_database_name,
         glue_client=glue_client,
-        logger=logger,
         db_meta=db_meta,
     )
 
@@ -116,14 +114,11 @@ def clone_database(
     for table in current_tables:
         table_meta = {k: v for k, v in table.items() if k in table_keys_to_keep}
         table_meta = {"TableInput": {**table_meta}}
-        create_table(
-            database_name=new_database_name, logger=logger, table_meta=table_meta
-        )
+        create_table(database_name=new_database_name, table_meta=table_meta)
 
 
 def create_table(
     database_name: str,
-    logger: Logger,
     table_name: str | None = None,
     table_meta: dict | None = None,
 ) -> None:
@@ -142,7 +137,7 @@ def create_table(
     return None
 
 
-def get_table(database_name: str, table_name: str, logger: Logger) -> dict | None:
+def get_table(database_name: str, table_name: str) -> dict | None:
     """Get the table for the given table name and database"""
     try:
         table = glue_client.get_table(DatabaseName=database_name, Name=table_name)
@@ -159,7 +154,7 @@ def get_table(database_name: str, table_name: str, logger: Logger) -> dict | Non
         return table
 
 
-def list_tables(database_name: str, logger: Logger) -> list[dict]:
+def list_tables(database_name: str) -> list[dict]:
     """Get the table for the given table name and database"""
     try:
         tables = glue_client.get_tables(DatabaseName=database_name)
@@ -195,7 +190,6 @@ def table_exists(database_name: str, table_name: str) -> bool:
 def delete_table(
     database_name: str,
     table_name: str,
-    logger: Logger,
 ) -> None:
     """Attempts to locate and delete a glue table for the given data product"""
     try:
@@ -228,7 +222,6 @@ def refresh_table_partitions(
 def start_query_execution_and_wait(
     database_name: str,
     sql: str,
-    logger: Logger,
     workgroup: str = "data_product_workgroup",
 ) -> str:
     """
@@ -280,20 +273,16 @@ def get_glue_database(*args, **kwargs):
 def delete_glue_table(
     data_product_name: str,
     table_name: str,
-    logger: Logger,
 ):
     """
     Alias for backwards compatability
     """
-    return delete_table(
-        database_name=data_product_name, table_name=table_name, logger=logger
-    )
+    return delete_table(database_name=data_product_name, table_name=table_name)
 
 
 def create_glue_database(
     glue_client: BaseClient,
     database_name: str,
-    logger: Logger,
     db_meta: dict | None = None,
 ):
     """
@@ -301,7 +290,6 @@ def create_glue_database(
     """
     return create_database(
         database_name=database_name,
-        logger=logger,
         db_meta=db_meta,
         client=glue_client,
     )

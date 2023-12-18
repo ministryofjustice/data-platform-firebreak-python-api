@@ -167,7 +167,6 @@ class TestDataProductMetadata:
         with patch("daap_api.services.data_platform_paths.s3_client", s3_client):
             md = DataProductMetadata(
                 data_product_name=test_metadata_pass["name"],
-                logger=logging.getLogger(),
                 input_data=test_metadata_pass,
             )
             assert md.exists
@@ -178,7 +177,6 @@ class TestDataProductMetadata:
         ):
             md = DataProductMetadata(
                 test_metadata_pass["name"],
-                logging.getLogger(),
                 input_data=test_metadata_pass,
             )
             assert not md.exists
@@ -192,7 +190,6 @@ class TestDataProductMetadata:
         ):
             md = DataProductMetadata(
                 test_metadata["name"],
-                logging.getLogger(),
                 input_data=test_metadata,
             )
             assert md.valid == expected_out
@@ -203,7 +200,6 @@ class TestDataProductMetadata:
         ):
             md = DataProductMetadata(
                 test_metadata_pass["name"],
-                logging.getLogger(),
                 input_data=test_metadata_pass,
             )
 
@@ -225,7 +221,6 @@ class TestDataProductMetadata:
             loaded_metadata = (
                 DataProductMetadata(
                     test_metadata_pass["name"],
-                    logging.getLogger(),
                     input_data=None,
                 )
                 .load()
@@ -251,7 +246,6 @@ class TestDataProductSchema:
             md = DataProductSchema(
                 data_product_name="test_product",
                 table_name="test_table",
-                logger=logging.getLogger(),
                 input_data=test_schema,
             )
             assert md.valid == expected_out
@@ -271,7 +265,6 @@ class TestDataProductSchema:
             schema = DataProductSchema(
                 data_product_name=data_product_name,
                 table_name="test_table",
-                logger=logging.getLogger(),
                 input_data=test_schema_pass,
             )
             assert schema.has_registered_data_product == expected_output
@@ -284,7 +277,6 @@ class TestDataProductSchema:
             schema = DataProductSchema(
                 data_product_name="test_product",
                 table_name="test_table",
-                logger=logging.getLogger(),
                 input_data=test_schema_pass,
             )
 
@@ -307,7 +299,6 @@ class TestDataProductSchema:
             schema = DataProductSchema(
                 data_product_name="test_product",
                 table_name="test_table",
-                logger=logging.getLogger(),
                 input_data=test_schema_pass,
             )
             assert schema.parent_product_has_registered_schema == expected

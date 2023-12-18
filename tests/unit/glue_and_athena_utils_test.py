@@ -1,4 +1,3 @@
-import logging
 from unittest.mock import patch
 
 import pytest
@@ -15,8 +14,6 @@ from daap_api.services.glue_and_athena_utils import (
     list_tables,
     table_exists,
 )
-
-logger = logging.getLogger()
 
 
 @pytest.fixture(autouse=True)
@@ -45,8 +42,8 @@ class TestDatabaseOperations:
         return "test_description"
 
     def test_create_and_get(self, database_name):
-        create_database(database_name=database_name, logger=logger)
-        response = get_database(database_name=database_name, logger=logger)
+        create_database(database_name=database_name)
+        response = get_database(database_name=database_name)
 
         assert response["Database"]["Name"] == database_name
 
@@ -57,31 +54,31 @@ class TestDatabaseOperations:
                 "Name": database_name,
             }
         }
-        create_database(database_name=database_name, logger=logger, db_meta=db_meta)
-        response = get_database(database_name=database_name, logger=logger)
+        create_database(database_name=database_name, db_meta=db_meta)
+        response = get_database(database_name=database_name)
 
         assert response["Database"]["Name"] == database_name
         assert response["Database"]["Description"] == description
 
     def test_database_exists(self, database_name):
-        create_database(database_name=database_name, logger=logger)
+        create_database(database_name=database_name)
 
-        assert database_exists(database_name=database_name, logger=logger)
+        assert database_exists(database_name=database_name)
 
     def test_delete_existing_database(self, database_name):
-        create_database(database_name=database_name, logger=logger)
+        create_database(database_name=database_name)
 
-        delete_database(database_name=database_name, logger=logger)
+        delete_database(database_name=database_name)
 
-        assert not database_exists(database_name=database_name, logger=logger)
+        assert not database_exists(database_name=database_name)
 
     def test_delete_missing_database(self, database_name):
-        delete_database(database_name=database_name, logger=logger)
+        delete_database(database_name=database_name)
 
-        assert not database_exists(database_name=database_name, logger=logger)
+        assert not database_exists(database_name=database_name)
 
     def test_get_missing_database(self, database_name):
-        assert get_database(database_name=database_name, logger=logger) is None
+        assert get_database(database_name=database_name) is None
 
     def test_clone_database(self, database_name, description):
         db_meta = {
@@ -92,16 +89,14 @@ class TestDatabaseOperations:
         }
         create_database(
             database_name=database_name,
-            logger=logger,
             db_meta=db_meta,
         )
 
         clone_database(
             existing_database_name=database_name,
             new_database_name="new",
-            logger=logger,
         )
-        result = get_database(database_name="new", logger=logger)
+        result = get_database(database_name="new")
 
         assert result["Database"]["Name"] == "new"
         assert result["Database"]["Description"] == description
@@ -109,16 +104,14 @@ class TestDatabaseOperations:
     def test_clone_database_with_tables(self, database_name):
         create_database(
             database_name=database_name,
-            logger=logger,
         )
-        create_table(database_name=database_name, table_name="foo", logger=logger)
+        create_table(database_name=database_name, table_name="foo")
 
         clone_database(
             existing_database_name=database_name,
             new_database_name="new",
-            logger=logger,
         )
-        result = list_tables(database_name=database_name, logger=logger)
+        result = list_tables(database_name=database_name)
         assert [i["Name"] for i in result] == ["foo"]
 
 
@@ -144,43 +137,35 @@ class TestTableOperations:
         }
 
     def test_create_and_get_table(self, database_name, table_name, table_meta):
-        create_database(database_name, logging.getLogger())
+        create_database(database_name)
 
         create_table(
             database_name=database_name,
-            logger=logger,
             table_meta=table_meta,
         )
 
-        result = get_table(
-            database_name=database_name, table_name=table_name, logger=logger
-        )
+        result = get_table(database_name=database_name, table_name=table_name)
         assert result["Table"]["Name"] == table_name
 
     def test_list_tables(self, database_name, table_name):
         table_name_1 = table_name + "_1"
         table_name_2 = table_name + "_2"
-        create_database(database_name, logging.getLogger())
+        create_database(database_name)
 
-        create_table(
-            database_name=database_name, logger=logger, table_name=table_name_1
-        )
-        create_table(
-            database_name=database_name, logger=logger, table_name=table_name_2
-        )
+        create_table(database_name=database_name, table_name=table_name_1)
+        create_table(database_name=database_name, table_name=table_name_2)
 
-        result = list_tables(database_name=database_name, logger=logger)
+        result = list_tables(database_name=database_name)
         assert [i["Name"] for i in result] == [table_name_1, table_name_2]
 
     def test_list_tables_for_missing_db(self, database_name):
-        assert list_tables(database_name=database_name, logger=logger) == []
+        assert list_tables(database_name=database_name) == []
 
     def test_table_exists(self, database_name, table_name, table_meta):
-        create_database(database_name, logging.getLogger())
+        create_database(database_name)
 
         create_table(
             database_name=database_name,
-            logger=logger,
             table_meta=table_meta,
         )
 
@@ -193,7 +178,7 @@ class TestTableOperations:
         table_name,
         table_meta,
     ):
-        create_database(database_name, logging.getLogger())
-        create_table(database_name=database_name, logger=logger, table_meta=table_meta)
+        create_database(database_name)
+        create_table(database_name=database_name, table_meta=table_meta)
 
-        delete_table(database_name, table_name, logging.getLogger())
+        delete_table(database_name, table_name)

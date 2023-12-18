@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import traceback
 from copy import deepcopy
-from logging import Logger
 from typing import Dict
 
 import boto3
@@ -21,6 +21,7 @@ from .data_platform_paths import (
 )
 
 s3_client = boto3.client("s3")
+logger = logging.getLogger(__name__)
 
 glue_csv_table_input_template = {
     "DatabaseName": "",  # add to this from data product name pulled from api path
@@ -93,7 +94,6 @@ class BaseJsonSchema:
     def __init__(
         self,
         data_product_name: str,
-        logger: Logger,
         json_type: JsonSchemaName,
         latest_version_path: BucketPath,
         input_data: dict | None,
@@ -102,7 +102,6 @@ class BaseJsonSchema:
         self.data_product_name = data_product_name
         if table_name is not None:
             self.table_name = table_name
-        self.logger = logger
         self.valid = False
         self.type = json_type
         self.exists = self._check_a_version_exists()
@@ -128,13 +127,13 @@ class BaseJsonSchema:
             s3_client.head_object(Bucket=bucket_path.bucket, Key=bucket_path.key)
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                self.logger.info(f"No {self.type.value} exists for this data product")
+                logger.info(f"No {self.type.value} exists for this data product")
                 return False
             else:
-                self.logger.error(f"Uknown error - {e}")
+                logger.error(f"Uknown error - {e}")
                 raise Exception(f"Uknown error - {e}")
         else:
-            self.logger.info(
+            logger.info(
                 f"version 1 of {self.type.value} already exists for this data product"
             )
             return True
@@ -154,12 +153,12 @@ class BaseJsonSchema:
             self.model_class.model_validate(data_to_validate)
         except ValidationError:
             self.error_traceback = traceback.format_exc()
-            self.logger.error(
+            logger.error(
                 f"{self.type} has failed validation with error: {self.error_traceback}"
             )
             self.valid = False
         else:
-            self.logger.info(f"{self.type} has passed validation")
+            logger.info(f"{self.type} has passed validation")
             self.valid = True
             if self.type.value == "metadata":
                 self.data = data_to_validate
@@ -183,11 +182,11 @@ class BaseJsonSchema:
                     "ServerSideEncryption": "AES256",
                 },
             )
-            self.logger.info(
+            logger.info(
                 f"Data Product {self.type} written to s3 at {self.write_bucket}/{write_key}"
             )
         else:
-            self.logger.error(f"{self.type} is not valid to write.")
+            logger.error(f"{self.type} is not valid to write.")
             raise ValidationError(
                 "Metadata must be validated before being written to s3."
             )
@@ -199,7 +198,7 @@ class BaseJsonSchema:
                 f"s3://{self.write_bucket}/{self.latest_version_key}"
             )
         else:
-            self.logger.error("There is no metadata to load")
+            logger.error("There is no metadata to load")
         return self
 
     def changed_fields(self) -> set[str]:
@@ -239,7 +238,6 @@ class DataProductSchema(BaseJsonSchema):
         self,
         data_product_name: str,
         table_name: str,
-        logger: Logger,
         input_data: dict | None,
     ):
         # returns path of latest schema or v1 if it doesn't exist
@@ -249,7 +247,6 @@ class DataProductSchema(BaseJsonSchema):
 
         super().__init__(
             data_product_name=data_product_name,
-            logger=logger,
             json_type=JsonSchemaName("schema"),
             latest_version_path=latest_version_path,
             input_data=input_data,
@@ -257,14 +254,13 @@ class DataProductSchema(BaseJsonSchema):
         )
 
         if not self._does_data_product_metadata_exist():
-            self.logger.error("Data product metadata not yet registered.")
+            logger.error("Data product metadata not yet registered.")
             self.has_registered_data_product = False
         else:
             self.has_registered_data_product = True
             self.parent_data_product_metadata = (
                 DataProductMetadata(
                     data_product_name=self.data_product_name,
-                    logger=self.logger,
                     input_data=None,
                 )
                 .load()
@@ -279,7 +275,6 @@ class DataProductSchema(BaseJsonSchema):
         """checks whether data product for schema has metadata registered"""
         metadata = DataProductMetadata(
             data_product_name=self.data_product_name,
-            logger=self.logger,
             input_data=None,
         )
         return metadata.exists
@@ -329,9 +324,9 @@ class DataProductSchema(BaseJsonSchema):
                 )
 
             self.data = glue_schema
-            self.logger.info("Data Product schema converted to csv glue table input")
+            logger.info("Data Product schema converted to csv glue table input")
         else:
-            self.logger.error("schema not validated before attempted conversion")
+            logger.error("schema not validated before attempted conversion")
 
         return self
 
@@ -410,7 +405,6 @@ class DataProductMetadata(BaseJsonSchema):
     def __init__(
         self,
         data_product_name: str,
-        logger: Logger,
         input_data: dict | None,
     ):
         latest_version_path = DataProductConfig(data_product_name).metadata_path()
@@ -418,7 +412,6 @@ class DataProductMetadata(BaseJsonSchema):
         super().__init__(
             json_type=JsonSchemaName("metadata"),
             data_product_name=data_product_name,
-            logger=logger,
             latest_version_path=latest_version_path,
             input_data=input_data,
         )

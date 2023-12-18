@@ -3,8 +3,8 @@ Functionality for creating major and minor version updates to a data product.
 """
 from __future__ import annotations
 
+import logging
 from enum import Enum
-from logging import Logger
 from typing import NamedTuple
 
 import boto3
@@ -21,6 +21,7 @@ from .metadata_services import DataProductMetadata, DataProductSchema
 athena_client = boto3.client("athena")
 glue_client = boto3.client("glue")
 
+logger = logging.getLogger(__name__)
 
 s3_security_opts = {
     "ACL": "bucket-owner-full-control",
@@ -98,11 +99,10 @@ class VersionManager:
     Service to create new versions of a data product when metadata or schema are updated.
     """
 
-    def __init__(self, data_product_name, logger: Logger):
+    def __init__(self, data_product_name):
         self.data_product_config = DataProductConfig(name=data_product_name)
         self.data_product_name = data_product_name
         self.latest_version = self.data_product_config.latest_version
-        self.logger = logger
 
     def update_metadata_remove_schemas(self, schema_list: list[str]) -> str:
         """Handles removing schema(s) for a data product."""
@@ -115,14 +115,13 @@ class VersionManager:
         current_metadata = (
             DataProductMetadata(
                 data_product_name=data_product_name,
-                logger=self.logger,
                 input_data=None,
             )
             .load()
             .latest_version_saved_data
         )
         current_schemas = current_metadata.get("schemas", [])
-        self.logger.info(f"Current schemas: {current_schemas}")
+        logger.info(f"Current schemas: {current_schemas}")
 
         valid_schemas_to_delete = all(
             schema in current_schemas for schema in schema_list
@@ -130,29 +129,28 @@ class VersionManager:
         if not valid_schemas_to_delete:
             schemas_not_in_current = list(set(schema_list).difference(current_schemas))
             error = f"Invalid schemas found in schema_list: {sorted(schemas_not_in_current)}"
-            self.logger.error(error)
+            logger.error(error)
             raise InvalidUpdate(error)
 
-        self.logger.info(f"schemas to delete: {schema_list}")
+        logger.info(f"schemas to delete: {schema_list}")
 
         current_metadata["schemas"] = [
             schema for schema in current_schemas if schema not in schema_list
         ]
         updated_metadata = DataProductMetadata(
             data_product_name=data_product_name,
-            logger=self.logger,
             input_data=current_metadata,
         ).load()
 
         if not updated_metadata.valid:
             error = "updated metadata validation failed"
-            self.logger.error(error)
+            logger.error(error)
             raise InvalidUpdate(error)
 
         new_version = generate_next_version_string(
             self.latest_version, UpdateType.MajorUpdate
         )
-        self.logger.info(f"new version: {new_version}")
+        logger.info(f"new version: {new_version}")
 
         # Copy files to the new version
         self._copy_from_previous_version(
@@ -226,7 +224,6 @@ class VersionManager:
         """
         metadata = DataProductMetadata(
             data_product_name=self.data_product_config.name,
-            logger=self.logger,
             input_data=input_data,
         ).load()
 
@@ -241,7 +238,7 @@ class VersionManager:
             msg = f"Non-updatable metadata field{('s'[:num_fields!=1])} changed:"
             for f in changed_fields:
                 msg += f"{f}: {metadata.latest_version_saved_data[f]} -> {metadata.data[f]}; "
-            self.logger.error(msg)
+            logger.error(msg)
             raise InvalidUpdate(msg)
 
         return metadata
@@ -266,7 +263,6 @@ class VersionManager:
         schema = DataProductSchema(
             data_product_name=self.data_product_config.name,
             table_name=table_name,
-            logger=self.logger,
             input_data=input_data,
         ).load()
 
@@ -294,7 +290,7 @@ class VersionManager:
         metadata = self._verify_input_metadata(input_data)
 
         state = metadata_update_type(metadata)
-        self.logger.info(f"Update type {state}")
+        logger.info(f"Update type {state}")
 
         if state != UpdateType.MinorUpdate:
             raise InvalidUpdate(state)
@@ -312,9 +308,9 @@ class VersionManager:
         schema = self._verify_input_schema(input_data=input_data, table_name=table_name)
 
         state, changes = schema_update_type(schema)
-        self.logger.info(f"Update type {state}")
+        logger.info(f"Update type {state}")
         if not state == UpdateType.Unchanged:
-            self.logger.info(f"Changes to schema: {changes}")
+            logger.info(f"Changes to schema: {changes}")
 
             new_version = generate_next_version_string(schema.version, state)
             self._copy_from_previous_version(
@@ -361,7 +357,7 @@ class VersionManager:
             self.latest_version == "v1.0"
             and not schema.parent_product_has_registered_schema
         ):
-            self.logger.info(
+            logger.info(
                 f"No existing schemas are associated with {data_product_name}; "
                 f"setting version to 'v1.0' for {schema.table_name}"
             )
@@ -390,7 +386,6 @@ class VersionManager:
             source_folder=source_folder,
             latest_version=latest_version,
             new_version=new_version,
-            logger=self.logger,
         )
 
     def _create_database_for_new_version(
@@ -414,10 +409,9 @@ class VersionManager:
             clone_database(
                 existing_database_name=existing_database_name,
                 new_database_name=new_database_name,
-                logger=self.logger,
             )
         except ValueError:
-            self.logger.info(
+            logger.info(
                 f"Postponing creation of {new_major_version} glue db: previous version does not exist"
             )
             return
@@ -433,7 +427,6 @@ class VersionManager:
                     Version.parse(version).format_major_version(),
                 ),
                 table_name=schema_name,
-                logger=self.logger,
             )
 
             delete_element_version_data_files(
@@ -442,7 +435,7 @@ class VersionManager:
                 version=version,
             )
         except ValueError:
-            self.logger.info("Table does not exist - nothing to delete")
+            logger.info("Table does not exist - nothing to delete")
             return
 
 
@@ -536,9 +529,7 @@ def schema_update_type(
     return update_type, all_schema_changes
 
 
-def s3_copy_folder_to_new_folder(
-    bucket, source_folder, latest_version, new_version, logger
-):
+def s3_copy_folder_to_new_folder(bucket, source_folder, latest_version, new_version):
     """
     Recursively copy a folder, replacing {latest_version} with {new_version}
     """

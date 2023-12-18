@@ -1,6 +1,5 @@
 import copy
 import json
-import logging
 import os
 from typing import Any
 from unittest.mock import patch
@@ -9,8 +8,6 @@ import pytest
 
 from daap_api.services.glue_and_athena_utils import database_exists, table_exists
 from daap_api.services.versioning import InvalidUpdate, VersionManager
-
-logger = logging.getLogger()
 
 test_metadata_no_schema = {
     "name": "test_product0",
@@ -300,7 +297,7 @@ class TestTableWithNoGlueDatabase:
     @pytest.fixture(autouse=True)
     def setup_subject(self, glue_client, data_product_name):
         with patch("daap_api.services.glue_and_athena_utils.glue_client", glue_client):
-            self.version_manager = VersionManager(data_product_name, logger)
+            self.version_manager = VersionManager(data_product_name)
             yield
 
     def test_can_delete_schema(self):
@@ -339,7 +336,7 @@ class TestVersionManager:
         input_data = dict(**input_metadata)
         input_data["description"] = "New description"
 
-        version_manager = VersionManager(input_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(input_metadata["name"])
 
         version = version_manager.update_metadata(input_data)
 
@@ -358,7 +355,7 @@ class TestVersionManager:
             Key="test_product/v1.0/test_table/schema.json",
         )
 
-        version_manager = VersionManager(test_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(test_metadata["name"])
 
         version, changes, copy_response = version_manager.update_schema(
             input_data, "test_table"
@@ -377,7 +374,7 @@ class TestVersionManager:
 
     def test_create_schema_version_new(self, s3_client, table_name):
         data_product_name = test_metadata_no_schema["name"]
-        version_manager = VersionManager(data_product_name, logging.getLogger())
+        version_manager = VersionManager(data_product_name)
 
         version, _ = version_manager.create_schema(
             table_name=table_name, input_data=test_schema
@@ -395,7 +392,7 @@ class TestVersionManager:
 
     def test_create_schema_version_exists_bump(self, table_name):
         data_product_name = test_metadata_with_schemas["name"]
-        version_manager = VersionManager(data_product_name, logging.getLogger())
+        version_manager = VersionManager(data_product_name)
 
         version, _ = version_manager.create_schema(
             table_name=table_name, input_data=test_schema
@@ -421,7 +418,7 @@ class TestVersionManager:
             Key="test_product/v1.0/test_table/schema.json",
         )
 
-        version_manager = VersionManager(test_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(test_metadata["name"])
 
         with patch(
             "daap_api.services.versioning.glue_client",
@@ -454,7 +451,7 @@ class TestVersionManager:
         )
         input_data = copy.deepcopy(test_schema)
 
-        version_manager = VersionManager(test_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(test_metadata["name"])
         with pytest.raises(InvalidUpdate):
             version, changes = version_manager.update_schema(input_data, "test_table")
 
@@ -468,7 +465,7 @@ class TestVersionManager:
         input_data = dict(**test_metadata)
         input_data["description"] = "New description"
 
-        version_manager = VersionManager(test_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(test_metadata["name"])
 
         version_manager.update_metadata(input_data)
 
@@ -484,7 +481,7 @@ class TestVersionManager:
         input_data = dict(**test_metadata)
         input_data["name"] = "new name"
 
-        version_manager = VersionManager(test_metadata["name"], logging.getLogger())
+        version_manager = VersionManager(test_metadata["name"])
 
         with pytest.raises(InvalidUpdate):
             version_manager.update_metadata(input_data)
@@ -493,7 +490,7 @@ class TestVersionManager:
         input_data = dict(**test_metadata)
         input_data["description"] = "New description"
 
-        version_manager = VersionManager("does_not_exist", logging.getLogger())
+        version_manager = VersionManager("does_not_exist")
 
         with pytest.raises(InvalidUpdate):
             version_manager.update_metadata(input_data)
@@ -546,7 +543,7 @@ class TestUpdateMetadataRemoveSchema:
     @pytest.fixture(autouse=True)
     def setup_subject(self, glue_client, data_product_name):
         with patch("daap_api.services.glue_and_athena_utils.glue_client", glue_client):
-            self.version_manager = VersionManager(data_product_name, logger)
+            self.version_manager = VersionManager(data_product_name)
             yield
 
     def test_success(self):
@@ -605,7 +602,7 @@ class TestUpdateMetadataRemoveSchema:
         self.version_manager.update_metadata_remove_schemas(schema_list=schema_list)
 
         expected_database_name = f"{self.data_product_name}_{self.new_major_version}"
-        assert database_exists(expected_database_name, logger=logger)
+        assert database_exists(expected_database_name)
         assert table_exists(expected_database_name, "schema1")
         assert not table_exists(expected_database_name, "schema0")
 

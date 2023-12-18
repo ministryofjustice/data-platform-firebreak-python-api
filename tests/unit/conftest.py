@@ -40,7 +40,6 @@ def set_env_vars(monkeypatch):
 def data_product_metadata(s3_client, data_product_name, table_name, logger):
     return DataProductMetadata(
         data_product_name=data_product_name,
-        logger=logger,
         input_data=None,
     ).load()
 
@@ -114,13 +113,6 @@ def data_product_element(region_name, s3_client):
         )
         element = DataProductElement.load(element_name="foo", data_product_name="bar")
         return element
-
-
-@pytest.fixture
-def logger():
-    import logging
-
-    return logging.getLogger(__name__)
 
 
 def load_v1_metadata_schema_to_mock_s3(s3_client):

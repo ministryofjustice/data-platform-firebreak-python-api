@@ -36,6 +36,8 @@ TABLE_NAME_REGEX = re.compile(r"table_name=([^\/]*)\/")
 # https://docs.aws.amazon.com/athena/latest/ug/tables-databases-columns-names.html
 MAX_IDENTIFIER_LENGTH = 255
 
+logger = logging.getLogger(__name__)
+
 
 class JsonSchemaName(Enum):
     """
@@ -195,7 +197,7 @@ def search_string_for_regex(string: str, regex: re.Pattern[str]) -> str | None:
     """Search a string for a regex pattern and return the first result"""
     search_match = regex.search(string)
     if not search_match:
-        logging.info(f"{regex} not found in {string}")
+        logger.info(f"{regex} not found in {string}")
     return search_match.groups()[0] if search_match else None
 
 

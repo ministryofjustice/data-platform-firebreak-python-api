@@ -39,16 +39,16 @@ from daap_api.services.infer_glue_schema import (
         ),  # The sample size doesn't align with a line break. Stop when hitting the following line separator.
     ],
 )
-def test_csv_sample(test_input, expected, sample_size_in_bytes, logger):
+def test_csv_sample(test_input, expected, sample_size_in_bytes):
     bytes_stream = BytesIO(test_input)
     output = csv_sample(
-        bytes_stream, logger=logger, sample_size_in_bytes=sample_size_in_bytes
+        bytes_stream, sample_size_in_bytes=sample_size_in_bytes
     ).getvalue()
 
     assert output == expected
 
 
-def test_infer_schema_from_csv(region_name, s3_client, logger, data_product_element):
+def test_infer_schema_from_csv(region_name, s3_client, data_product_element):
     uuid_value = uuid4()
     timestamp = datetime(2023, 1, 1)
     file_extension = ".csv"
@@ -76,7 +76,6 @@ def test_infer_schema_from_csv(region_name, s3_client, logger, data_product_elem
     inferred_metadata = infer_glue_schema_from_raw_csv(
         file_path=BucketPath(path.bucket, path.key),
         data_product_element=data_product_element,
-        logger=logger,
     )
 
     assert inferred_metadata.metadata["TableInput"]["StorageDescriptor"]["Columns"] == [
