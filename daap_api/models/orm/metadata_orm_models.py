@@ -22,7 +22,7 @@ class SchemaTable(Base):
         primary_key=True,
     )
 
-    data_product_id: Mapped[int] = mapped_column(ForeignKey("dataproducts.id"))
+    data_product_id: Mapped[int] = mapped_column(ForeignKey("data_products.id"))
     data_product: Mapped["DataProductTable"] = relationship(back_populates="schemas")
 
     name: Mapped[str] = mapped_column(
@@ -49,7 +49,7 @@ class SchemaTable(Base):
 
 
 class DataProductTable(Base):
-    __tablename__ = "dataproducts"
+    __tablename__ = "data_products"
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
