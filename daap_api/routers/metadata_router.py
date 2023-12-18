@@ -13,7 +13,6 @@ from ..models.api.metadata_api_models import (
     SchemaRead,
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
-from ..services.data_platform_logging import DataPlatformLogger
 from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
@@ -75,12 +74,12 @@ async def get_metadata(
         data_product_name, version = parse_data_product_id(id)
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
-    logger.add_data_product(data_product_name)
 
     data_product_internal = session.execute(
         select(DataProductTable).filter_by(name=data_product_name, version=version)
     ).scalar()
     if data_product_internal is None:
+        logger.info("Data product does not exist")
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"Data product does not exist with id {id}"
         )

@@ -1,9 +1,10 @@
 import contextlib
 import hashlib
 import json
+import re
 
 import structlog
-from fastapi import FastAPI, Request, Security
+from fastapi import FastAPI, Request, Response, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 from idempotency_header_middleware import IdempotencyHeaderMiddleware
@@ -15,6 +16,9 @@ from .db import create_db_and_tables
 from .routers import ingestion_router, metadata_router
 
 IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
+ID_REGEX = re.compile(
+    r"dp:(?P<data_product>[^:]+):(?P<version>[^:]+)(:(?P<table>[^:]+))?"
+)
 
 
 @contextlib.asynccontextmanager
@@ -123,3 +127,21 @@ def _generate_idempotent_hash_key(body: dict):
     json_body = json.dumps(body, sort_keys=True)
     body_hash = hashlib.md5(json_body.encode()).hexdigest()
     return body_hash
+
+
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next) -> Response:
+    id_match = ID_REGEX.search(request.url.path)
+
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(
+        method=request.method,
+        path=request.url.path,
+        query=request.url.query,
+        data_product=id_match.group("data_product") if id_match else None,
+        table=id_match.group("table") if id_match else None,
+    )
+
+    response: Response = await call_next(request)
+
+    return response
