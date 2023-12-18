@@ -1,13 +1,8 @@
 from typing import Tuple
 
-<<<<<<< HEAD
+import structlog
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
-=======
-import structlog
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import IntegrityError
->>>>>>> ee8b554 (Attempt to implement structlog)
 from sqlmodel import select
 
 from ..db import Session, session_dependency

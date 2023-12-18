@@ -10,7 +10,7 @@ from idempotency_header_middleware import IdempotencyHeaderMiddleware
 from idempotency_header_middleware.backends import MemoryBackend
 from pydantic import AnyHttpUrl, computed_field
 
-from .config import settings
+from .config import settings, setup_logging
 from .db import create_db_and_tables
 from .routers import ingestion_router, metadata_router
 
@@ -19,6 +19,8 @@ IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
+
     create_db_and_tables()
 
     if settings.auth_enabled:

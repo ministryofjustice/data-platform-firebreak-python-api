@@ -1,16 +1,11 @@
-<<<<<<< HEAD
-import os
-from os import environ
-
-from pydantic import AnyHttpUrl, computed_field
-from pydantic_settings import BaseSettings, SettingsConfigDict
-=======
 import logging
+import os
+import sys
 from os import environ
 
 import structlog
-from pydantic_settings import BaseSettings
->>>>>>> ee8b554 (Attempt to implement structlog)
+from pydantic import AnyHttpUrl, computed_field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -58,50 +53,72 @@ environ["LANDING_ZONE_BUCKET"] = settings.landing_zone_bucket_name
 environ["RAW_DATA_BUCKET"] = settings.data_bucket_name
 environ["CURATED_DATA_BUCKET"] = settings.data_bucket_name
 
-logs_render = (
-    structlog.processors.JSONRenderer()
-    if settings.enable_json_logs
-    else structlog.dev.ConsoleRenderer(colors=True)
-)
 
-shared_processors = [
-    structlog.stdlib.add_logger_name,
-    structlog.stdlib.add_log_level,
-    structlog.stdlib.PositionalArgumentsFormatter(),
-    structlog.processors.EventRenamer(to="message"),
-    structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", key="date_time"),
-    structlog.contextvars.merge_contextvars,
-    structlog.processors.StackInfoRenderer(),
-    structlog.processors.format_exc_info,
-    structlog.processors.CallsiteParameterAdder(
-        parameters={
-            structlog.processors.CallsiteParameter.FUNC_NAME,
-            structlog.processors.CallsiteParameter.LINENO,
-        },
-    ),
-]
+def setup_logging():
+    """
+    Configure structlog to format all messages
+    logged through structlog or the standard library logging module
+    https://www.structlog.org/en/stable/standard-library.html#rendering-using-structlog-based-formatters-within-logging
+    """
+    logging.basicConfig(
+        format="%(message)s",
+        stream=sys.stdout,
+        level=logging.INFO,
+    )
 
-structlog.configure(
-    processors=[
-        *shared_processors,
-        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-    ],
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-)
+    logs_render = (
+        structlog.processors.JSONRenderer()
+        if settings.enable_json_logs
+        else structlog.dev.ConsoleRenderer(
+            colors=True,
+            event_key="message",
+            timestamp_key="date_time",
+        )
+    )
 
-handler = logging.StreamHandler()
+    shared_processors = [
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.EventRenamer(to="message"),
+        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", key="date_time"),
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.CallsiteParameterAdder(
+            parameters={
+                structlog.processors.CallsiteParameter.FUNC_NAME,
+                structlog.processors.CallsiteParameter.LINENO,
+            },
+        ),
+    ]
 
-# Use `ProcessorFormatter` to format all `logging` entries.
-formatter = structlog.stdlib.ProcessorFormatter(
-    foreign_pre_chain=shared_processors,
-    processors=[
-        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-        logs_render,
-    ],
-)
+    structlog.configure(
+        processors=[
+            *shared_processors,
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
 
-handler.setFormatter(formatter)
-root_uvicorn_logger = logging.getLogger()
-root_uvicorn_logger.addHandler(handler)
+    handler = logging.StreamHandler()
+
+    # Use `ProcessorFormatter` to format all `logging` entries.
+    formatter = structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=shared_processors,
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            logs_render,
+        ],
+    )
+
+    handler.setFormatter(formatter)
+    root_uvicorn_logger = logging.getLogger()
+    root_uvicorn_logger.handlers.clear()
+    root_uvicorn_logger.addHandler(handler)
+    root_uvicorn_logger.setLevel(logging.INFO)
+
+    # Avoid duplicate echo messages from SQLAlchemy
+    logging.getLogger("sqlalchemy.engine.Engine").handlers.clear()
