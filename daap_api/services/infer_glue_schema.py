@@ -1,6 +1,7 @@
 import copy
 import os
 from io import BytesIO
+from logging import Logger
 from typing import BinaryIO
 
 import boto3
@@ -10,7 +11,6 @@ from mojap_metadata.metadata.metadata import Metadata
 from pyarrow import csv as pa_csv
 from pyarrow import parquet as pq
 
-from .data_platform_logging import DataPlatformLogger
 from .data_platform_paths import BucketPath, DataProductElement
 
 s3_client = boto3.client("s3")
@@ -54,7 +54,7 @@ class InferredMetadata:
 
 def csv_sample(
     bytes_stream: BinaryIO,
-    logger: DataPlatformLogger,
+    logger: Logger,
     sample_size_in_bytes: int = 1_500_000,
 ) -> BinaryIO:
     """
@@ -95,7 +95,7 @@ class GlueSchemaGenerator:
     Generate the glue schema from a data file
     """
 
-    def __init__(self, logger: DataPlatformLogger):
+    def __init__(self, logger: Logger):
         self.logger = logger
         self.ac = ArrowConverter()
         self.gc = GlueConverter()
@@ -197,7 +197,7 @@ class GlueSchemaGenerator:
 def infer_glue_schema_from_raw_csv(
     file_path: BucketPath,
     data_product_element: DataProductElement,
-    logger: DataPlatformLogger,
+    logger: Logger,
     has_headers: bool = True,
     sample_size_mb: float = 1.5,
 ) -> InferredMetadata:

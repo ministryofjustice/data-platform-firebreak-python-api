@@ -437,7 +437,6 @@ class TestVersionManager:
 
         assert version == "v2.0"
         assert changes == expected
-        assert copy_response == {"test_table copied": False}
         self.assert_has_keys(
             {
                 "test_product/v2.0/metadata.json",

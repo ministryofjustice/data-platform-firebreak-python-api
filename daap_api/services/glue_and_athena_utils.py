@@ -1,10 +1,9 @@
 import time
+from logging import Logger
 
 import boto3
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
-
-from .data_platform_logging import DataPlatformLogger
 
 glue_client = boto3.client("glue")
 athena_client = boto3.client("athena")
@@ -12,7 +11,7 @@ athena_client = boto3.client("athena")
 
 def create_database(
     database_name: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
     db_meta: dict | None = None,
     client: BaseClient = None,
 ) -> None:
@@ -36,7 +35,7 @@ def create_database(
             raise
 
 
-def get_database(database_name: str, logger: DataPlatformLogger) -> dict | None:
+def get_database(database_name: str, logger: Logger) -> dict | None:
     """Get the database for the given database name"""
     try:
         database = glue_client.get_database(Name=database_name)
@@ -51,12 +50,12 @@ def get_database(database_name: str, logger: DataPlatformLogger) -> dict | None:
         return database
 
 
-def database_exists(database_name: str, logger: DataPlatformLogger) -> bool:
+def database_exists(database_name: str, logger: Logger) -> bool:
     """Check if a database exists with the given name"""
     return get_database(database_name=database_name, logger=logger) is not None
 
 
-def delete_database(database_name: str, logger: DataPlatformLogger) -> None:
+def delete_database(database_name: str, logger: Logger) -> None:
     """Delete a glue database with the given database name"""
     try:
         glue_client.delete_database(Name=database_name)
@@ -69,7 +68,7 @@ def delete_database(database_name: str, logger: DataPlatformLogger) -> None:
 
 
 def clone_database(
-    existing_database_name: str, new_database_name: str, logger: DataPlatformLogger
+    existing_database_name: str, new_database_name: str, logger: Logger
 ) -> None:
     """
     Make a copy of a database with a new name, copying all metadata except ids and timestamps.
@@ -124,7 +123,7 @@ def clone_database(
 
 def create_table(
     database_name: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
     table_name: str | None = None,
     table_meta: dict | None = None,
 ) -> None:
@@ -143,9 +142,7 @@ def create_table(
     return None
 
 
-def get_table(
-    database_name: str, table_name: str, logger: DataPlatformLogger
-) -> dict | None:
+def get_table(database_name: str, table_name: str, logger: Logger) -> dict | None:
     """Get the table for the given table name and database"""
     try:
         table = glue_client.get_table(DatabaseName=database_name, Name=table_name)
@@ -162,7 +159,7 @@ def get_table(
         return table
 
 
-def list_tables(database_name: str, logger: DataPlatformLogger) -> list[dict]:
+def list_tables(database_name: str, logger: Logger) -> list[dict]:
     """Get the table for the given table name and database"""
     try:
         tables = glue_client.get_tables(DatabaseName=database_name)
@@ -198,7 +195,7 @@ def table_exists(database_name: str, table_name: str) -> bool:
 def delete_table(
     database_name: str,
     table_name: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
 ) -> None:
     """Attempts to locate and delete a glue table for the given data product"""
     try:
@@ -231,7 +228,7 @@ def refresh_table_partitions(
 def start_query_execution_and_wait(
     database_name: str,
     sql: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
     workgroup: str = "data_product_workgroup",
 ) -> str:
     """
@@ -283,7 +280,7 @@ def get_glue_database(*args, **kwargs):
 def delete_glue_table(
     data_product_name: str,
     table_name: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
 ):
     """
     Alias for backwards compatability
@@ -296,7 +293,7 @@ def delete_glue_table(
 def create_glue_database(
     glue_client: BaseClient,
     database_name: str,
-    logger: DataPlatformLogger,
+    logger: Logger,
     db_meta: dict | None = None,
 ):
     """

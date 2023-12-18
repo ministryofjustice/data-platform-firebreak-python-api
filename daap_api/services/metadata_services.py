@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import traceback
 from copy import deepcopy
+from logging import Logger
 from typing import Dict
 
 import boto3
@@ -11,7 +12,6 @@ from dataengineeringutils3.s3 import read_json_from_s3
 from pydantic import ValidationError
 
 from ..models.api.metadata_api_models import DataProductCreate, SchemaRead
-from .data_platform_logging import DataPlatformLogger
 from .data_platform_paths import (
     BucketPath,
     DataProductConfig,
@@ -93,7 +93,7 @@ class BaseJsonSchema:
     def __init__(
         self,
         data_product_name: str,
-        logger: DataPlatformLogger,
+        logger: Logger,
         json_type: JsonSchemaName,
         latest_version_path: BucketPath,
         input_data: dict | None,
@@ -239,7 +239,7 @@ class DataProductSchema(BaseJsonSchema):
         self,
         data_product_name: str,
         table_name: str,
-        logger: DataPlatformLogger,
+        logger: Logger,
         input_data: dict | None,
     ):
         # returns path of latest schema or v1 if it doesn't exist
@@ -410,7 +410,7 @@ class DataProductMetadata(BaseJsonSchema):
     def __init__(
         self,
         data_product_name: str,
-        logger: DataPlatformLogger,
+        logger: Logger,
         input_data: dict | None,
     ):
         latest_version_path = DataProductConfig(data_product_name).metadata_path()

@@ -18,7 +18,6 @@ os.environ["BUCKET_NAME"] = "bucket"
 os.putenv("TZ", "Europe/London")
 time.tzset()
 
-from daap_api.services.data_platform_logging import DataPlatformLogger  # noqa E402
 from daap_api.services.data_platform_paths import DataProductElement  # noqa E402
 from daap_api.services.metadata_services import DataProductMetadata  # noqa E402
 
@@ -119,7 +118,9 @@ def data_product_element(region_name, s3_client):
 
 @pytest.fixture
 def logger():
-    return DataPlatformLogger()
+    import logging
+
+    return logging.getLogger(__name__)
 
 
 def load_v1_metadata_schema_to_mock_s3(s3_client):
