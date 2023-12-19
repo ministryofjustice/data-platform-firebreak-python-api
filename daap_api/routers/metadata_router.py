@@ -13,6 +13,7 @@ from ..models.api.metadata_api_models import (
     SchemaRead,
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
+from ..models.orm.metadata_repositories import DataProductRepository
 from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
@@ -36,28 +37,11 @@ async def register_data_product(
     session: Session = session_dependency,
 ) -> DataProductRead:
     data_product_internal = DataProductTable(**data_product.model_dump())
-
-    session.add(data_product_internal)
+    repo = DataProductRepository(session)
 
     try:
-        session.commit()
-        session.refresh(data_product_internal)
-    except IntegrityError:
-        session.rollback()
-        data_product_internal = session.query(
-            select(DataProductTable).filter_by(name=data_product.name)
-        ).one()
-
-    # Check if the stored version is identical to the one passed in -
-    # if so, we can just return it
-    # TODO: implement idempotency of create requests as a cross-cutting concern
-    # so we don't need the extra logic here
-    if (
-        DataProductCreate.model_validate(
-            data_product_internal.to_attributes(), strict=True
-        )
-        != data_product
-    ):
+        repo.create(data_product_internal)
+    except repo.IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A data product with this name already exists",
@@ -75,9 +59,9 @@ async def get_metadata(
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
 
-    data_product_internal = session.execute(
-        select(DataProductTable).filter_by(name=data_product_name, version=version)
-    ).scalar()
+    repo = DataProductRepository(session)
+
+    data_product_internal = repo.fetch(name=data_product_name, version=version)
     if data_product_internal is None:
         logger.info("Data product does not exist")
         raise HTTPException(

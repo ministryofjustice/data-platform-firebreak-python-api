@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
@@ -51,6 +51,8 @@ class SchemaTable(Base):
 class DataProductTable(Base):
     __tablename__ = "data_products"
 
+    __table_args__ = (Index("name", "version", unique=True),)
+
     id: Mapped[int] = mapped_column(
         primary_key=True,
     )
@@ -59,7 +61,6 @@ class DataProductTable(Base):
 
     name: Mapped[str] = mapped_column(
         index=True,
-        unique=True,
     )
     domain: Mapped[str]
     dataProductOwner: Mapped[str]
