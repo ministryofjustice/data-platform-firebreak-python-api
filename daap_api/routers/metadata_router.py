@@ -13,7 +13,6 @@ from ..models.api.metadata_api_models import (
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
-from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
 

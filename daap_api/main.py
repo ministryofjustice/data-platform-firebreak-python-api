@@ -13,7 +13,7 @@ from pydantic import AnyHttpUrl, computed_field
 
 from .config import settings, setup_logging
 from .db import create_db_and_tables
-from .routers import ingestion_router, metadata_router
+from .routers import metadata_router
 
 IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
 ID_REGEX = re.compile(
@@ -43,7 +43,7 @@ app = FastAPI(
         "clientId": settings.AZURE_OPENAPI_CLIENT_ID,
     },
 )
-app.include_router(ingestion_router.router)
+
 app.include_router(metadata_router.router)
 
 if settings.BACKEND_CORS_ORIGINS:
