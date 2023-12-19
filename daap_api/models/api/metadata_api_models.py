@@ -21,8 +21,6 @@ class Column(BaseModel):
 
 
 class SchemaBase(BaseModel):
-    __tablename__ = "schemas"
-
     tableDescription: str = Field(
         description="A description of the data contained within the table",
         json_schema_extra={
