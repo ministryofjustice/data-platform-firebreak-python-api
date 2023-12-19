@@ -13,7 +13,7 @@ from ..models.api.metadata_api_models import (
     SchemaRead,
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
-from ..models.orm.metadata_repositories import DataProductRepository
+from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
 from ..services.metadata_services import DataProductSchema, format_table_schema
 
 router = APIRouter()
@@ -79,26 +79,22 @@ async def create_schema(
 ) -> SchemaRead:
     data_product_name, version, table_name = parse_schema_id(id)
 
-    data_product_internal = session.execute(
-        select(DataProductTable).filter_by(name=data_product_name, version=version)
-    ).scalar()
-
-    if data_product_internal is None:
+    data_product = DataProductRepository(session).fetch(
+        name=data_product_name, version=version
+    )
+    if data_product is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             f"id {id} references a data product that does not exist",
         )
 
     schema_internal = SchemaTable(
-        data_product=data_product_internal, name=table_name, **schema.model_dump()
+        data_product=data_product, name=table_name, **schema.model_dump()
     )
-    session.add(schema_internal)
-
+    repo = SchemaRepository(session)
     try:
-        session.commit()
-        session.refresh(data_product_internal)
+        repo.create(schema_internal)
     except IntegrityError:
-        session.rollback()
         raise HTTPException(
             status.HTTP_409_CONFLICT, f"A schema with this name already exists"
         )
@@ -109,18 +105,13 @@ async def create_schema(
 @router.get("/schemas/{id}")
 async def get_schema(id: str, session: Session = session_dependency) -> SchemaRead:
     data_product_name, version, table_name = parse_schema_id(id)
-    schema_internal = session.execute(
-        select(SchemaTable)
-        .join(DataProductTable)
-        .where(SchemaTable.name == table_name)
-        .where(DataProductTable.name == data_product_name)
-        .where(DataProductTable.version == version)
-    ).scalar()
-
-    if schema_internal is None:
+    schema = SchemaRepository(session).fetch(
+        data_product_name=data_product_name, version=version, table_name=table_name
+    )
+    if schema is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             f"id {id} references a schema version that does not exist",
         )
 
-    return SchemaRead.model_validate(schema_internal.to_attributes(), strict=True)
+    return SchemaRead.model_validate(schema.to_attributes(), strict=True)

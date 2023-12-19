@@ -5,8 +5,15 @@ from sqlmodel.pool import StaticPool
 
 from daap_api.config import settings
 from daap_api.db import Base
-from daap_api.models.orm.metadata_orm_models import DataProductTable, Status
-from daap_api.models.orm.metadata_repositories import DataProductRepository
+from daap_api.models.orm.metadata_orm_models import (
+    DataProductTable,
+    SchemaTable,
+    Status,
+)
+from daap_api.models.orm.metadata_repositories import (
+    DataProductRepository,
+    SchemaRepository,
+)
 
 
 @pytest.fixture(name="session")
@@ -150,3 +157,57 @@ def test_no_data_product(session):
 
     assert v1 is None
     assert latest is None
+
+
+def test_create_data_product_with_schema(session):
+    data_product = DataProductTable(
+        name="data_product",
+        domain="hmpps",
+        description="example data product",
+        dataProductOwner="joe.bloggs@justice.gov.uk",
+        dataProductOwnerDisplayName="Joe bloggs",
+        status=Status.published,
+        email="data-product-contact@justice.gov.uk",
+        retentionPeriod=365,
+        dpiaRequired=True,
+        version="v1.1",
+    )
+    DataProductRepository(session).create(data_product)
+    schema = SchemaTable(
+        name="my-schema", tableDescription="abc", columns=[], data_product=data_product
+    )
+    SchemaRepository(session).create(schema)
+    assert schema.id is not None
+
+
+def test_data_product_with_schema(session):
+    data_product = DataProductTable(
+        name="data_product",
+        domain="hmpps",
+        description="example data product",
+        dataProductOwner="joe.bloggs@justice.gov.uk",
+        dataProductOwnerDisplayName="Joe bloggs",
+        status=Status.published,
+        email="data-product-contact@justice.gov.uk",
+        retentionPeriod=365,
+        dpiaRequired=True,
+        version="v1.1",
+    )
+    data_product_repo = DataProductRepository(session)
+    data_product_repo.create(data_product)
+    schema = SchemaTable(
+        name="my-schema", tableDescription="abc", columns=[], data_product=data_product
+    )
+    schema_repo = SchemaRepository(session)
+    schema_repo.create(schema)
+
+    fetched = data_product_repo.fetch_latest(name="data_product")
+    assert fetched is not None
+    assert fetched.schemas == [schema]
+
+    fetched_schema = schema_repo.fetch("data_product", "v1.1", "my-schema")
+    assert fetched_schema == schema
+
+
+def test_no_schema(session):
+    assert SchemaRepository(session).fetch("abc", "v1.0", "def") is None
