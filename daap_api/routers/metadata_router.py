@@ -2,8 +2,7 @@ from typing import Tuple
 
 import structlog
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlmodel import select
+from sqlalchemy.exc import IntegrityError
 
 from ..db import Session, session_dependency
 from ..models.api.metadata_api_models import (
@@ -35,6 +34,9 @@ def parse_schema_id(id) -> Tuple[str, str, str]:
 async def list_data_products(
     session: Session = session_dependency,
 ) -> list[DataProductRead]:
+    """
+    List all data products on the platform
+    """
     repo = DataProductRepository(session)
     return [DataProductRead.model_validate(dp.to_attributes()) for dp in repo.list()]
 
@@ -44,6 +46,12 @@ async def register_data_product(
     data_product: DataProductCreate,
     session: Session = session_dependency,
 ) -> DataProductRead:
+    """
+    Register a data product with the Data Platform. This makes information about
+    your data product visible in the data catalgoue.
+
+    A unique ID will be generated for the initial version of the data product.
+    """
     data_product_internal = DataProductTable(**data_product.model_dump())
     repo = DataProductRepository(session)
 
@@ -62,6 +70,9 @@ async def register_data_product(
 async def get_metadata(
     id: str, session: Session = session_dependency
 ) -> DataProductRead:
+    """
+    Fetch metadata about a data product by ID.
+    """
     try:
         data_product_name, version = parse_data_product_id(id)
     except ValueError:
@@ -85,6 +96,9 @@ async def get_metadata(
 async def create_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
 ) -> SchemaRead:
+    """
+    Register a schema (blueprint of your table) for a new table in your Data Product.
+    """
     data_product_name, version, table_name = parse_schema_id(id)
 
     data_product = DataProductRepository(session).fetch(
@@ -112,6 +126,9 @@ async def create_schema(
 
 @router.get("/schemas/{id}")
 async def get_schema(id: str, session: Session = session_dependency) -> SchemaRead:
+    """
+    Get a schema that has been registered to a data product by ID.
+    """
     data_product_name, version, table_name = parse_schema_id(id)
     schema = SchemaRepository(session).fetch(
         data_product_name=data_product_name, version=version, table_name=table_name
