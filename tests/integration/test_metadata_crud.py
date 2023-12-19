@@ -130,6 +130,39 @@ def test_read_metadata(client, session):
     }
 
 
+def test_list_data_products(client, session):
+    session.add(data_product())
+    session.commit()
+
+    response = client.get("/data-products")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {
+            "name": "hmpps_use_of_force",
+            "description": "Data product for hmpps_use_of_force dev data",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+            "schemas": [],
+            "version": "v1.0",
+            "id": "dp:hmpps_use_of_force:v1.0",
+            "tags": {},
+        }
+    ]
+
+
+def test_no_data_products(client, session):
+    response = client.get("/data-products")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+
 def test_create_schema(client, session, statement_columns):
     session.add(data_product())
     session.commit()

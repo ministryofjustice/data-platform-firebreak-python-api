@@ -31,6 +31,14 @@ def parse_schema_id(id) -> Tuple[str, str, str]:
     return name, version, table_name
 
 
+@router.get("/data-products/")
+async def list_data_products(
+    session: Session = session_dependency,
+) -> list[DataProductRead]:
+    repo = DataProductRepository(session)
+    return [DataProductRead.model_validate(dp.to_attributes()) for dp in repo.list()]
+
+
 @router.post("/data-products/")
 async def register_data_product(
     data_product: DataProductCreate,
