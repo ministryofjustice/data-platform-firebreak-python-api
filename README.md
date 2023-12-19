@@ -25,17 +25,13 @@ e.g. to disable Azure Active Directory authentication:
 
 - Run `poetry run uvicorn daap_api.main:app --reload`
 - The API is served at http://127.0.0.1:8000/
-- Example endpoint: http://localhost:8000/data-products/hmpps_use_of_force
+- Example endpoint: http://localhost:8000/data-products
 - The docs are served at http://127.0.0.1:8000/redoc
-
-**Note**: metadata endpoints currently assume you have AWS environment variables set.
 
 ### Running the tests
 
 - `poetry run pytest`
 - `poetry run pytest tests/unit` to just run the unit tests
-
-**Note**: the integration tests currently assume you have AWS environment variables set.
 
 ### Opening a shell
 
