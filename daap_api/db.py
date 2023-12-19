@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Self
 
 from fastapi import Depends
 from sqlalchemy import create_engine
@@ -6,7 +6,18 @@ from sqlalchemy.orm import DeclarativeBase, Session
 
 
 class Base(DeclarativeBase):
-    pass
+    def changed_fields(self, other: Self):
+        result = set()
+
+        for column in self.__table__.columns:
+            a_value = getattr(self, column.name)
+            b_value = getattr(other, column.name)
+            if a_value is None and b_value is None:
+                continue
+            if a_value != b_value:
+                result.add(column.name)
+
+        return result
 
 
 from .config import settings

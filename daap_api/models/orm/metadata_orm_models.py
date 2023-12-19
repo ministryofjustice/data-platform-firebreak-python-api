@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
 from typing import Optional
@@ -7,6 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
 from daap_api.db import Base
+
+from ..version import Version
 
 
 class Status(Enum):
@@ -47,6 +51,11 @@ class SchemaTable(Base):
             "tableDescription": self.tableDescription,
         }
 
+    def copy(self, **kwargs) -> SchemaTable:
+        attributes = self.to_attributes()
+        attributes.update(kwargs)
+        return SchemaTable(**attributes)
+
 
 class DataProductTable(Base):
     __tablename__ = "data_products"
@@ -84,6 +93,22 @@ class DataProductTable(Base):
         JSON,
         default=dict,
     )
+
+    def next_major_version(self, **kwargs):
+        version = str(Version.parse(self.version).increment_major())
+        return self.copy(version=version, **kwargs)
+
+    def next_minor_version(self, **kwargs):
+        version = str(Version.parse(self.version).increment_minor())
+        return self.copy(version=version, **kwargs)
+
+    def copy(self, **kwargs) -> DataProductTable:
+        columns = self.__table__.columns.keys()
+        attributes = {k: getattr(self, k) for k in columns}
+        del attributes["id"]
+        attributes.update(kwargs)
+
+        return DataProductTable(**attributes)
 
     def to_attributes(self):
         """
