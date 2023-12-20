@@ -41,11 +41,16 @@ class SchemaTable(Base):
         default=list,
     )
 
+    @property
+    def external_id(self):
+        return f"{self.data_product.external_id}:{self.name}"
+
     def to_attributes(self):
         """
         Helper method for serializing API resources
         """
         return {
+            "id": self.external_id,
             "columns": self.columns,
             "name": self.name,
             "tableDescription": self.tableDescription,
@@ -110,11 +115,16 @@ class DataProductTable(Base):
 
         return DataProductTable(**attributes)
 
+    @property
+    def external_id(self):
+        return f"dp:{self.name}:{self.version}"
+
     def to_attributes(self):
         """
         Helper method for serializing API resources
         """
         return {
+            "id": self.external_id,
             "name": self.name,
             "version": self.version,
             "description": self.description,

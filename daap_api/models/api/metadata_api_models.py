@@ -38,7 +38,7 @@ class SchemaCreate(SchemaBase):
 
 
 class SchemaRead(SchemaBase):
-    pass
+    id: str
 
 
 class DataProductBase(BaseModel):
@@ -170,3 +170,7 @@ class DataProductRead(DataProductBase):
         ]
 
         return value
+
+
+class SchemaReadWithDataProduct(SchemaRead):
+    data_product: DataProductRead

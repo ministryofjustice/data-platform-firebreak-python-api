@@ -11,6 +11,7 @@ from ..models.api.metadata_api_models import (
     DataProductUpdate,
     SchemaCreate,
     SchemaRead,
+    SchemaReadWithDataProduct,
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
@@ -173,7 +174,7 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
 @router.put("/schemas/{id}")
 async def update_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
-) -> SchemaRead:
+) -> SchemaReadWithDataProduct:
     data_product_name, version, table_name = parse_schema_id(id)
     repo = SchemaRepository(session)
     fetched_schema = repo.fetch(
@@ -189,4 +190,6 @@ async def update_schema(
     new_schema = [
         schema for schema in new_version.schemas if schema.name == table_name
     ][0]
-    return SchemaRead.model_validate(new_schema.to_attributes())
+    attributes = new_schema.to_attributes()
+    attributes["data_product"] = new_schema.data_product.to_attributes()
+    return SchemaReadWithDataProduct.model_validate(attributes)

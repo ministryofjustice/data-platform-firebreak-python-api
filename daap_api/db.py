@@ -10,6 +10,8 @@ class Base(DeclarativeBase):
         result = set()
 
         for column in self.__table__.columns:
+            if column.primary_key or column.foreign_keys:
+                continue
             a_value = getattr(self, column.name)
             b_value = getattr(other, column.name)
             if a_value is None and b_value is None:
