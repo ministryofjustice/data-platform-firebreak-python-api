@@ -86,9 +86,7 @@ async def get_metadata(
             status.HTTP_404_NOT_FOUND, f"Data product does not exist with id {id}"
         )
 
-    return DataProductRead.model_validate(
-        data_product_internal.to_attributes(), strict=True
-    )
+    return DataProductRead.from_model(data_product_internal)
 
 
 @router.post("/schemas/{id}")

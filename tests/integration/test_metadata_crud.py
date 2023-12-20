@@ -226,7 +226,9 @@ def test_read_data_product_with_schema(client, statement_columns, session):
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["schemas"] == ["statement"]
+    assert response.json()["schemas"] == [
+        {"id": "dp:hmpps_use_of_force:v1.0:statement"}
+    ]
 
 
 def test_missing_data_product(client):

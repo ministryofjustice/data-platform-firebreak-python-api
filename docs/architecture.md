@@ -127,7 +127,7 @@ Currently AWS API gateway handles various concerns:
 
 Some of this could be handled by the python framework, or a load balancer.
 
-### Should data operations be part of the same service as the metadata store?
+## Should data operations be part of the same service as the metadata store?
 
 We're not sure yet!
 

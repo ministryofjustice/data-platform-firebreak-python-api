@@ -110,13 +110,18 @@ class DataProductCreate(DataProductBase):
     )
 
 
+class SchemaId(BaseModel):
+    id: str
+
+
 class DataProductRead(DataProductBase):
     """
     A read request for a data product
     """
 
-    schemas: list[str] = Field(
-        default=[], description="List of schema names defined for this data product"
+    schemas: list[SchemaId] = Field(
+        default_factory=list,
+        description="List of schemas defined for this data product",
     )
 
     version: str = Field(
@@ -130,3 +135,12 @@ class DataProductRead(DataProductBase):
     @property
     def id(self) -> str:
         return f"dp:{self.name}:{self.version}"
+
+    @staticmethod
+    def from_model(model):
+        value = DataProductRead.model_validate(model.to_attributes())
+        value.schemas = [
+            SchemaId(id=f"{value.id}:{schema.name}") for schema in model.schemas
+        ]
+
+        return value
