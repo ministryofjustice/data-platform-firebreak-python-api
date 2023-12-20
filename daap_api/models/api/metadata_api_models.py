@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from ..orm.metadata_orm_models import Status
 
@@ -34,7 +34,7 @@ class SchemaBase(BaseModel):
 
 
 class SchemaCreate(SchemaBase):
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class SchemaRead(SchemaBase):
@@ -95,6 +95,8 @@ class DataProductCreate(DataProductBase):
     """
     A create request for a data product
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     dataProductMaintainer: Optional[str] = Field(
         default=None,

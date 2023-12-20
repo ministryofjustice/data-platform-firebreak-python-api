@@ -88,15 +88,6 @@ def test_create_metadata(client):
             "status": "draft",
             "retentionPeriod": 3000,
             "dpiaRequired": False,
-            "schemas": [
-                "knex_migrations",
-                "knex_migrations_lock",
-                "report",
-                "report_log",
-                "statement",
-                "statement_amendments",
-                "table",
-            ],
         },
     )
 
