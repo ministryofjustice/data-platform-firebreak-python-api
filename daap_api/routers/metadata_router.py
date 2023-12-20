@@ -8,11 +8,13 @@ from ..db import Session, session_dependency
 from ..models.api.metadata_api_models import (
     DataProductCreate,
     DataProductRead,
+    DataProductUpdate,
     SchemaCreate,
     SchemaRead,
 )
 from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
+from ..services.versioning_service import VersioningService
 
 router = APIRouter()
 
@@ -20,12 +22,18 @@ logger = structlog.get_logger(__name__)
 
 
 def parse_data_product_id(id) -> Tuple[str, str]:
-    _, name, version = id.split(":")
+    try:
+        _, name, version = id.split(":")
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
     return name, version
 
 
 def parse_schema_id(id) -> Tuple[str, str, str]:
-    _, name, version, table_name = id.split(":")
+    try:
+        _, name, version, table_name = id.split(":")
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
     return name, version, table_name
 
 
@@ -62,7 +70,33 @@ async def register_data_product(
             detail="A data product with this name already exists",
         )
 
-    return DataProductRead.model_validate(data_product_internal.to_attributes())
+    return DataProductRead.from_model(data_product_internal)
+
+
+@router.put("/data-products/{id}")
+async def update_data_product(
+    id: str,
+    data_product: DataProductUpdate,
+    session: Session = session_dependency,
+) -> DataProductRead:
+    """
+    Update metadata directly associated with a data product.
+    This will create a new minor version and return a new ID.
+    """
+    repo = DataProductRepository(session)
+    data_product_name, version = parse_data_product_id(id)
+
+    current_metadata = repo.fetch(name=data_product_name, version=version)
+
+    if current_metadata is None:
+        logger.info("Data product does not exist")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, f"Data product does not exist with id {id}"
+        )
+
+    versioning_service = VersioningService(current_metadata)
+    new_version = versioning_service.update_metadata(**data_product.model_dump())
+    return DataProductRead.from_model(new_version)
 
 
 @router.get("/data-products/{id}")
@@ -72,10 +106,7 @@ async def get_metadata(
     """
     Fetch metadata about a data product by ID.
     """
-    try:
-        data_product_name, version = parse_data_product_id(id)
-    except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
+    data_product_name, version = parse_data_product_id(id)
 
     repo = DataProductRepository(session)
 

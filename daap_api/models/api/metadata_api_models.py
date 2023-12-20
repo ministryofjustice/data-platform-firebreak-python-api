@@ -46,11 +46,6 @@ class DataProductBase(BaseModel):
     Base fields that are readable and writable
     """
 
-    name: str = Field(
-        pattern=r"^[a-z0-9_]+$",
-        description="The name of the Data Product. Must contain only lowercase letters, numbers, and the underscore character.",
-        json_schema_extra={"example": "my_data_product"},
-    )
     description: str = Field(
         description="Detailed description about what functional area this Data Product is representing, what purpose it has and business related information.",
         json_schema_extra={
@@ -98,6 +93,31 @@ class DataProductCreate(DataProductBase):
 
     model_config = ConfigDict(extra="forbid")
 
+    name: str = Field(
+        pattern=r"^[a-z0-9_]+$",
+        description="The name of the Data Product. Must contain only lowercase letters, numbers, and the underscore character.",
+        json_schema_extra={"example": "my_data_product"},
+    )
+
+    dataProductMaintainer: Optional[str] = Field(
+        default=None,
+        description="Secondary party who is able to approve DPIA access requests, but who may or may not be legally responsible for the data",
+        json_schema_extra={"example": "information.asset.owner@justice.gov.uk"},
+    )
+    dataProductMaintainerDisplayName: Optional[str] = Field(
+        default=None,
+        description="The human-readable version of dataProductMaintainer",
+        json_schema_extra={"example": "Jonny Data"},
+    )
+
+
+class DataProductUpdate(DataProductBase):
+    """
+    An update request for a data product
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
     dataProductMaintainer: Optional[str] = Field(
         default=None,
         description="Secondary party who is able to approve DPIA access requests, but who may or may not be legally responsible for the data",
@@ -118,6 +138,12 @@ class DataProductRead(DataProductBase):
     """
     A read request for a data product
     """
+
+    name: str = Field(
+        pattern=r"^[a-z0-9_]+$",
+        description="The name of the Data Product. Must contain only lowercase letters, numbers, and the underscore character.",
+        json_schema_extra={"example": "my_data_product"},
+    )
 
     schemas: list[SchemaId] = Field(
         default_factory=list,

@@ -107,7 +107,10 @@ Some things that are different in this version:
 
 1. All resources have public-facing IDs that can be used to fetch the resource e.g. dp:hmpps_use_of_force:v1.0 and dp:hmpps_use_of_force:v1.0:statements.
 
-2. All versions of data products and schemas are addressable, not just the latest version
+2. All versions of data products and schemas are addressable via GET, PUT
+   and DELETE requests, not just the latest version.
+   (This idea is questionable; DELETE and PUT semantics only make sense against
+   the latest version)
 
 3. We added a user-friendly mechanism for making operations idempotent
 

@@ -253,6 +253,81 @@ def test_missing_schema(client):
     }
 
 
+def test_update_invalid_id(client):
+    response = client.put(
+        "/data-products/hmpps_use_of_the_force",
+        json={
+            "description": "Data product for hmpps_use_of_force dev data",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Invalid id: hmpps_use_of_the_force"}
+
+
+def test_update_missing_data_product(client):
+    response = client.put(
+        "/data-products/dp:hmpps_use_of_the_force:v1.0",
+        json={
+            "description": "Data product for hmpps_use_of_force dev data",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+        },
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {
+        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
+    }
+
+
+def test_update_data_product(client, session):
+    existing_data_product = data_product()
+    session.add(existing_data_product)
+    session.commit()
+
+    response = client.put(
+        "/data-products/dp:hmpps_use_of_force:v1.0",
+        json={
+            "description": "Updated description",
+            "domain": "HMPPS",
+            "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+            "dataProductOwnerDisplayName": "Data Platform Labs",
+            "email": "dataplatformlabs@digital.justice.gov.uk",
+            "status": "draft",
+            "retentionPeriod": 3000,
+            "dpiaRequired": False,
+        },
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "description": "Updated description",
+        "domain": "HMPPS",
+        "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
+        "dataProductOwnerDisplayName": "Data Platform Labs",
+        "email": "dataplatformlabs@digital.justice.gov.uk",
+        "status": "draft",
+        "retentionPeriod": 3000,
+        "dpiaRequired": False,
+        "id": "dp:hmpps_use_of_force:v1.1",
+        "name": "hmpps_use_of_force",
+        "tags": {},
+        "schemas": [],
+        "version": "v1.1",
+    }
+
+
 def test_idempotent_request(client):
     json = {
         "name": "hmpps_use_of_force",
