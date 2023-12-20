@@ -63,7 +63,7 @@ class SchemaTable(Base):
 
 
 class DataProductTable(Base):
-    __tablename__ = "data_products"
+    __tablename__ = "data_product_versions"
 
     __table_args__ = (Index("name", "version", unique=True),)
 
