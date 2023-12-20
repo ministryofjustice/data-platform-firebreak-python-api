@@ -328,6 +328,28 @@ def test_update_data_product(client, session):
     }
 
 
+def test_remove_column_from_schema(client, session):
+    existing_data_product = data_product()
+    existing_schema = schema(existing_data_product)
+    session.add(existing_data_product)
+    session.add(existing_schema)
+
+    response = client.put(
+        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        json={
+            "tableDescription": "abcd",
+            "columns": [{"name": "id", "type": "bigint", "description": ""}],
+        },
+    )
+
+    print(response.text)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "tableDescription": "abcd",
+        "columns": [{"name": "id", "type": "bigint", "description": ""}],
+    }
+
+
 def test_idempotent_request(client):
     json = {
         "name": "hmpps_use_of_force",

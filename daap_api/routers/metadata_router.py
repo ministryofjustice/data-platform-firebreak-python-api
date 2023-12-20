@@ -168,3 +168,25 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
         )
 
     return SchemaRead.model_validate(schema.to_attributes(), strict=True)
+
+
+@router.put("/schemas/{id}")
+async def update_schema(
+    id: str, schema: SchemaCreate, session: Session = session_dependency
+) -> SchemaRead:
+    data_product_name, version, table_name = parse_schema_id(id)
+    repo = SchemaRepository(session)
+    fetched_schema = repo.fetch(
+        data_product_name=data_product_name, version=version, table_name=table_name
+    )
+    if fetched_schema is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            f"id {id} references a data product version that does not exist",
+        )
+    versioning_service = VersioningService(fetched_schema.data_product)
+    new_version = versioning_service.update_schema(table_name, **schema.model_dump())
+    new_schema = [
+        schema for schema in new_version.schemas if schema.name == table_name
+    ][0]
+    return SchemaRead.model_validate(new_schema.to_attributes())
