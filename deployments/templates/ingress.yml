@@ -6,6 +6,10 @@ metadata:
     external-dns.alpha.kubernetes.io/set-identifier: dp-fb-daap-api-ingress-${NAMESPACE}-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      SecRuleEngine On
+      SecDefaultAction "phase:2,pass,log,tag:github_team=data-platform-labs"
 spec:
   ingressClassName: default
   tls:
