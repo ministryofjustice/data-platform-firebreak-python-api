@@ -1,84 +1,20 @@
 import pytest
 from fastapi import status
 
-from daap_api.models.orm.metadata_orm_models import (
-    DataProductTable,
-    DataProductVersionTable,
-    SchemaTable,
-)
 
-SAMPLE_COLUMNS = [
-    {"name": "id", "type": "bigint", "description": ""},
-    {"name": "report_id", "type": "bigint", "description": ""},
-    {"name": "user_id", "type": "string", "description": ""},
-    {"name": "name", "type": "string", "description": ""},
-    {"name": "email", "type": "string", "description": ""},
-    {"name": "submitted_date", "type": "string", "description": ""},
-    {"name": "statement_status", "type": "string", "description": ""},
-    {"name": "last_training_month", "type": "string", "description": ""},
-    {"name": "last_training_year", "type": "string", "description": ""},
-    {"name": "job_start_year", "type": "string", "description": ""},
-    {"name": "statement", "type": "string", "description": ""},
-    {"name": "staff_id", "type": "bigint", "description": ""},
-    {"name": "created_date", "type": "timestamp", "description": ""},
-    {"name": "updated_date", "type": "string", "description": ""},
-    {"name": "next_reminder_date", "type": "string", "description": ""},
-    {"name": "overdue_date", "type": "string", "description": ""},
-    {"name": "in_progress", "type": "string", "description": ""},
-    {"name": "deleted", "type": "string", "description": ""},
-    {"name": "removal_requested_reason", "type": "string", "description": ""},
-    {"name": "removal_requested_date", "type": "string", "description": ""},
-]
-
-
-def data_product_version():
-    return DataProductVersionTable(
-        name="hmpps_use_of_force",
-        description="Data product for hmpps_use_of_force dev data",
-        domain="HMPPS",
-        dataProductOwner="dataplatformlabs@digital.justice.gov.uk",
-        dataProductOwnerDisplayName="Data Platform Labs",
-        email="dataplatformlabs@digital.justice.gov.uk",
-        status="draft",
-        retentionPeriod=3000,
-        dpiaRequired=False,
-        version="v1.0",
-    )
-
-
-def schema(data_product_version):
-    return SchemaTable(
-        name="statement",
-        columns=SAMPLE_COLUMNS,
-        tableDescription="desc",
-        data_product_version=data_product_version,
-    )
+@pytest.fixture
+def data_product(data_product_factory):
+    return data_product_factory.create()
 
 
 @pytest.fixture
-def statement_columns():
-    return [
-        {"name": "id", "type": "bigint", "description": ""},
-        {"name": "report_id", "type": "bigint", "description": ""},
-        {"name": "user_id", "type": "string", "description": ""},
-        {"name": "name", "type": "string", "description": ""},
-        {"name": "email", "type": "string", "description": ""},
-        {"name": "submitted_date", "type": "string", "description": ""},
-        {"name": "statement_status", "type": "string", "description": ""},
-        {"name": "last_training_month", "type": "string", "description": ""},
-        {"name": "last_training_year", "type": "string", "description": ""},
-        {"name": "job_start_year", "type": "string", "description": ""},
-        {"name": "statement", "type": "string", "description": ""},
-        {"name": "staff_id", "type": "bigint", "description": ""},
-        {"name": "created_date", "type": "timestamp", "description": ""},
-        {"name": "updated_date", "type": "string", "description": ""},
-        {"name": "next_reminder_date", "type": "string", "description": ""},
-        {"name": "overdue_date", "type": "string", "description": ""},
-        {"name": "in_progress", "type": "string", "description": ""},
-        {"name": "deleted", "type": "string", "description": ""},
-        {"name": "removal_requested_reason", "type": "string", "description": ""},
-        {"name": "removal_requested_date", "type": "string", "description": ""},
-    ]
+def data_product_current_version(data_product):
+    return data_product.current_version
+
+
+@pytest.fixture
+def schema(schema_factory, data_product_current_version):
+    return schema_factory.create(data_product_version=data_product_current_version)
 
 
 def test_create_metadata(client):
@@ -103,10 +39,7 @@ def test_create_metadata(client):
     assert response_data_product["id"] == "dp:hmpps_use_of_force:v1.0"
 
 
-def test_read_metadata(client, session):
-    session.add(data_product_version())
-    session.commit()
-
+def test_read_metadata(client, data_product_current_version):
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
     assert response.status_code == status.HTTP_200_OK
@@ -127,14 +60,7 @@ def test_read_metadata(client, session):
     }
 
 
-def test_list_data_products(client, session):
-    initial_version = data_product_version()
-    session.add(initial_version)
-    session.add(
-        DataProductTable(current_version=initial_version, name=initial_version.name)
-    )
-    session.commit()
-
+def test_list_data_products(client, data_product_current_version):
     response = client.get("/data-products")
 
     assert response.status_code == status.HTTP_200_OK
@@ -157,106 +83,63 @@ def test_list_data_products(client, session):
     ]
 
 
-def test_no_data_products(client, session):
+def test_no_data_products(client):
     response = client.get("/data-products")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
 
 
-def test_create_schema(client, session, statement_columns):
-    initial_version = data_product_version()
-    session.add(initial_version)
-    session.add(
-        DataProductTable(current_version=initial_version, name=initial_version.name)
-    )
-    session.commit()
-
+def test_create_schema(client, session, data_product_current_version):
     response = client.post(
         "/schemas/dp:hmpps_use_of_force:v1.0:statement",
         json={
             "tableDescription": "statement desc",
-            "columns": statement_columns,
+            "columns": [],
         },
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "tableDescription": "statement desc",
-        "columns": statement_columns,
+        "columns": [],
         "id": "dp:hmpps_use_of_force:v1.0:statement",
     }
 
 
-def test_create_schema_for_non_existent_product(client, session, statement_columns):
+def test_create_schema_for_non_existent_product(client):
     response = client.post(
         "/schemas/dp:hmpps_use_of_force:v1.0:statement",
         json={
             "tableDescription": "statement desc",
-            "columns": statement_columns,
+            "columns": [],
         },
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_create_schema_that_already_exists(client, session, statement_columns):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(existing_schema)
-    session.commit()
-
+def test_create_schema_that_already_exists(client, session, schema):
     response = client.post(
         "/schemas/dp:hmpps_use_of_force:v1.0:statement",
         json={
             "tableDescription": "statement desc",
-            "columns": statement_columns,
+            "columns": schema.columns,
         },
     )
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
-def test_read_schema(client, statement_columns, session):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(existing_schema)
-    session.commit()
-
+def test_read_schema(client, schema):
     response = client.get("/schemas/dp:hmpps_use_of_force:v1.0:statement")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "tableDescription": "desc",
-        "columns": statement_columns,
+        "columns": schema.columns,
         "id": "dp:hmpps_use_of_force:v1.0:statement",
     }
 
 
-def test_read_data_product_with_schema(client, statement_columns, session):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(existing_schema)
-    session.commit()
-
+def test_read_data_product_with_schema(client, schema):
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
 
     assert response.status_code == status.HTTP_200_OK
@@ -325,17 +208,7 @@ def test_update_missing_data_product(client):
     }
 
 
-def test_update_data_product(client, session):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    session.add(existing_data_product)
-    session.commit()
-
+def test_update_data_product(client, session, data_product_current_version):
     response = client.put(
         "/data-products/dp:hmpps_use_of_force:v1.0",
         json={
@@ -368,18 +241,7 @@ def test_update_data_product(client, session):
     }
 
 
-def test_remove_column_from_schema(client, session):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(existing_schema)
-
+def test_remove_column_from_schema(client, schema):
     response = client.put(
         "/schemas/dp:hmpps_use_of_force:v1.0:statement",
         json={
@@ -411,18 +273,7 @@ def test_remove_column_from_schema(client, session):
     }
 
 
-def test_minor_schema_update(client, session):
-    existing_data_product = data_product_version()
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(existing_schema)
-
+def test_minor_schema_update(client, schema):
     columns = [
         {"name": "id", "type": "bigint", "description": "unique identifier"},
         {"name": "report_id", "type": "bigint", "description": ""},
@@ -479,29 +330,19 @@ def test_minor_schema_update(client, session):
     }
 
 
-def test_schema_unchanged(client, session):
-    existing_data_product = data_product_version()
-    existing_schema = schema(existing_data_product)
-    session.add(existing_data_product)
-    session.add(
-        DataProductTable(
-            current_version=existing_data_product, name=existing_data_product.name
-        )
-    )
-    session.add(existing_schema)
-
+def test_schema_unchanged(client, schema):
     response = client.put(
         "/schemas/dp:hmpps_use_of_force:v1.0:statement",
         json={
-            "tableDescription": existing_schema.tableDescription,
-            "columns": existing_schema.columns,
+            "tableDescription": schema.tableDescription,
+            "columns": schema.columns,
         },
     )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "tableDescription": "desc",
-        "columns": SAMPLE_COLUMNS,
+        "columns": schema.columns,
         "id": "dp:hmpps_use_of_force:v1.0:statement",
         "data_product": {
             "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",

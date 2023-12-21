@@ -27,7 +27,7 @@ def session_fixture():
 
 def test_create_data_product(session):
     repo = DataProductRepository(session)
-    data_product = DataProductVersionTable(
+    data_product_version = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -39,14 +39,14 @@ def test_create_data_product(session):
         dpiaRequired=True,
     )
 
-    repo.create(data_product)
+    repo.create(data_product_version)
 
-    assert data_product.id is not None
+    assert data_product_version.id is not None
 
 
 def test_cannot_create_existing_data_product(session):
     repo = DataProductRepository(session)
-    data_product = DataProductVersionTable(
+    data_product_version = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -57,7 +57,7 @@ def test_cannot_create_existing_data_product(session):
         retentionPeriod=365,
         dpiaRequired=True,
     )
-    repo.create(data_product)
+    repo.create(data_product_version)
 
     duplicate = DataProductVersionTable(
         name="data_product",
@@ -160,7 +160,7 @@ def test_no_data_product(session):
 
 
 def test_create_data_product_with_schema(session):
-    data_product = DataProductVersionTable(
+    data_product_version = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -172,12 +172,12 @@ def test_create_data_product_with_schema(session):
         dpiaRequired=True,
         version="v1.1",
     )
-    DataProductRepository(session).create(data_product)
+    DataProductRepository(session).create(data_product_version)
     schema = SchemaTable(
         name="my-schema",
         tableDescription="abc",
         columns=[],
-        data_product_version=data_product,
+        data_product_version=data_product_version,
     )
     SchemaRepository(session).create(schema)
     assert schema.id is not None
