@@ -50,7 +50,7 @@ async def list_data_products(
     List all data products on the platform
     """
     repo = DataProductRepository(session)
-    return [DataProductRead.model_validate(dp.to_attributes()) for dp in repo.list()]
+    return [DataProductRead.from_model(dp) for dp in repo.list()]
 
 
 @router.post("/data-products/")
@@ -101,6 +101,7 @@ async def update_data_product(
 
     versioning_service = VersioningService(current_metadata)
     new_version = versioning_service.update_metadata(**data_product.model_dump())
+    repo.update(current_metadata.data_product, new_version)
     return DataProductRead.from_model(new_version)
 
 
@@ -193,10 +194,21 @@ async def update_schema(
             f"id {id} references a data product version that does not exist",
         )
     versioning_service = VersioningService(fetched_schema.data_product_version)
-    new_version = versioning_service.update_schema(table_name, **schema.model_dump())
+
+    new_version = versioning_service.update_schema(
+        table_name,
+        columns=[column.model_dump() for column in schema.columns],
+        tableDescription=schema.tableDescription,
+    )
+
+    DataProductRepository(session).update(
+        fetched_schema.data_product_version.data_product, new_version
+    )
+
     new_schema = [
         schema for schema in new_version.schemas if schema.name == table_name
     ][0]
     attributes = new_schema.to_attributes()
     attributes["data_product"] = new_version.to_attributes()
+    attributes["data_product"]["id"] = new_version.data_product.external_id
     return SchemaReadWithDataProduct.model_validate(attributes)

@@ -36,7 +36,7 @@ def test_create_metadata(client):
     assert response.status_code == status.HTTP_200_OK
     response_data_product = response.json()
     assert response_data_product["version"] == "v1.0"
-    assert response_data_product["id"] == "dp:hmpps_use_of_force:v1.0"
+    assert response_data_product["id"] == "dp:hmpps_use_of_force"
 
 
 def test_read_metadata(client, data_product_current_version):
@@ -55,7 +55,7 @@ def test_read_metadata(client, data_product_current_version):
         "dpiaRequired": False,
         "schemas": [],
         "version": "v1.0",
-        "id": "dp:hmpps_use_of_force:v1.0",
+        "id": "dp:hmpps_use_of_force",
         "tags": {},
     }
 
@@ -77,7 +77,7 @@ def test_list_data_products(client, data_product_current_version):
             "dpiaRequired": False,
             "schemas": [],
             "version": "v1.0",
-            "id": "dp:hmpps_use_of_force:v1.0",
+            "id": "dp:hmpps_use_of_force",
             "tags": {},
         }
     ]
@@ -233,7 +233,7 @@ def test_update_data_product(client, session, data_product_current_version):
         "status": "draft",
         "retentionPeriod": 3000,
         "dpiaRequired": False,
-        "id": "dp:hmpps_use_of_force:v1.1",
+        "id": "dp:hmpps_use_of_force",
         "name": "hmpps_use_of_force",
         "tags": {},
         "schemas": [],
@@ -262,7 +262,7 @@ def test_remove_column_from_schema(client, schema):
             "domain": "HMPPS",
             "dpiaRequired": False,
             "email": "dataplatformlabs@digital.justice.gov.uk",
-            "id": "dp:hmpps_use_of_force:v2.0",
+            "id": "dp:hmpps_use_of_force",
             "name": "hmpps_use_of_force",
             "retentionPeriod": 3000,
             "schemas": [],
@@ -319,7 +319,7 @@ def test_minor_schema_update(client, schema):
             "domain": "HMPPS",
             "dpiaRequired": False,
             "email": "dataplatformlabs@digital.justice.gov.uk",
-            "id": "dp:hmpps_use_of_force:v1.1",
+            "id": "dp:hmpps_use_of_force",
             "name": "hmpps_use_of_force",
             "retentionPeriod": 3000,
             "schemas": [],
@@ -351,7 +351,7 @@ def test_schema_unchanged(client, schema):
             "domain": "HMPPS",
             "dpiaRequired": False,
             "email": "dataplatformlabs@digital.justice.gov.uk",
-            "id": "dp:hmpps_use_of_force:v1.0",
+            "id": "dp:hmpps_use_of_force",
             "name": "hmpps_use_of_force",
             "retentionPeriod": 3000,
             "schemas": [],

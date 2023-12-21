@@ -21,6 +21,11 @@ class Status(Enum):
 
 class SchemaTable(Base):
     __tablename__ = "schemas"
+    __table_args__ = (
+        Index(
+            "ix_schemas_name_data_product_id", "name", "data_product_id", unique=True
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -31,10 +36,7 @@ class SchemaTable(Base):
         back_populates="schemas"
     )
 
-    name: Mapped[str] = mapped_column(
-        index=True,
-        unique=True,
-    )
+    name: Mapped[str] = mapped_column(index=True)
 
     tableDescription: Mapped[str]
 
@@ -59,7 +61,9 @@ class SchemaTable(Base):
         }
 
     def copy(self, **kwargs) -> SchemaTable:
-        attributes = self.to_attributes()
+        columns = self.__table__.columns.keys()
+        attributes = {k: getattr(self, k) for k in columns}
+        del attributes["id"]
         attributes.update(kwargs)
         return SchemaTable(**attributes)
 
@@ -88,7 +92,9 @@ class DataProductTable(Base):
 class DataProductVersionTable(Base):
     __tablename__ = "data_product_versions"
 
-    __table_args__ = (Index("name", "version", unique=True),)
+    __table_args__ = (
+        Index("ix_data_prouduct_versions_name_version", "name", "version", unique=True),
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -140,7 +146,6 @@ class DataProductVersionTable(Base):
         attributes = {k: getattr(self, k) for k in columns}
         del attributes["id"]
         attributes.update(kwargs)
-
         return DataProductVersionTable(**attributes)
 
     @property

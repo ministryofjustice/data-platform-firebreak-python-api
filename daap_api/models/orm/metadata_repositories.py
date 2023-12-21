@@ -56,7 +56,7 @@ class DataProductRepository:
         Load the latest version of a data product by name
         """
         return self.session.execute(
-            select(DataProductVersionTable, DataProductVersionTable.data_product)
+            select(DataProductVersionTable)
             .select_from(DataProductTable)
             .join(DataProductVersionTable, DataProductTable.current_version)
             .filter_by(name=name)

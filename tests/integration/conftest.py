@@ -31,6 +31,7 @@ def client(session: Session):
 @pytest.fixture()
 def session():
     engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
