@@ -1,8 +1,8 @@
 from typing import Optional, Sequence
 
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import Session
 
 from .metadata_orm_models import DataProductTable, DataProductVersionTable, SchemaTable
 
@@ -91,16 +91,19 @@ class SchemaRepository:
         self.session.refresh(schema)
         return schema
 
-    def fetch(
-        self, data_product_name: str, version: str, table_name: str
+    def fetch_latest(
+        self, data_product_name: str, table_name: str
     ) -> Optional[SchemaTable]:
         """
-        Load a schema by data product name, version, and table name
+        Load a schema by data product name and table name
         """
         return self.session.execute(
             select(SchemaTable)
-            .join(DataProductVersionTable, SchemaTable.data_product_version)
+            .select_from(DataProductTable)
+            .join(DataProductVersionTable, DataProductTable.current_version)
+            .join(
+                SchemaTable, SchemaTable.data_product_id == DataProductVersionTable.id
+            )
             .where(SchemaTable.name == table_name)
             .where(DataProductVersionTable.name == data_product_name)
-            .where(DataProductVersionTable.version == version)
         ).scalar()

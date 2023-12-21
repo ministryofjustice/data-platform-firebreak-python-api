@@ -40,7 +40,7 @@ def test_create_metadata(client):
 
 
 def test_read_metadata(client, data_product_current_version):
-    response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
+    response = client.get("/data-products/dp:hmpps_use_of_force")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
@@ -92,7 +92,7 @@ def test_no_data_products(client):
 
 def test_create_schema(client, session, data_product_current_version):
     response = client.post(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={
             "tableDescription": "statement desc",
             "columns": [],
@@ -108,7 +108,7 @@ def test_create_schema(client, session, data_product_current_version):
 
 def test_create_schema_for_non_existent_product(client):
     response = client.post(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={
             "tableDescription": "statement desc",
             "columns": [],
@@ -119,7 +119,7 @@ def test_create_schema_for_non_existent_product(client):
 
 def test_create_schema_that_already_exists(client, session, schema):
     response = client.post(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={
             "tableDescription": "statement desc",
             "columns": schema.columns,
@@ -129,7 +129,7 @@ def test_create_schema_that_already_exists(client, session, schema):
 
 
 def test_read_schema(client, schema):
-    response = client.get("/schemas/dp:hmpps_use_of_force:v1.0:statement")
+    response = client.get("/schemas/dp:hmpps_use_of_force:statement")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
@@ -140,7 +140,7 @@ def test_read_schema(client, schema):
 
 
 def test_read_data_product_with_schema(client, schema):
-    response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
+    response = client.get("/data-products/dp:hmpps_use_of_force")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["schemas"] == [
@@ -149,10 +149,10 @@ def test_read_data_product_with_schema(client, schema):
 
 
 def test_missing_data_product(client):
-    response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
+    response = client.get("/data-products/dp:hmpps_use_of_the_force")
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
-        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
+        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force"
     }
 
 
@@ -163,10 +163,10 @@ def test_invalid_id(client):
 
 
 def test_missing_schema(client):
-    response = client.get("/data-products/dp:hmpps_use_of_the_force:v1.0")
+    response = client.get("/data-products/dp:hmpps_use_of_the_force")
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
-        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
+        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force"
     }
 
 
@@ -190,7 +190,7 @@ def test_update_invalid_id(client):
 
 def test_update_missing_data_product(client):
     response = client.put(
-        "/data-products/dp:hmpps_use_of_the_force:v1.0",
+        "/data-products/dp:hmpps_use_of_the_force",
         json={
             "description": "Data product for hmpps_use_of_force dev data",
             "domain": "HMPPS",
@@ -204,13 +204,13 @@ def test_update_missing_data_product(client):
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
-        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force:v1.0"
+        "detail": "Data product does not exist with id dp:hmpps_use_of_the_force"
     }
 
 
 def test_update_data_product(client, session, data_product_current_version):
     response = client.put(
-        "/data-products/dp:hmpps_use_of_force:v1.0",
+        "/data-products/dp:hmpps_use_of_force",
         json={
             "description": "Updated description",
             "domain": "HMPPS",
@@ -243,7 +243,7 @@ def test_update_data_product(client, session, data_product_current_version):
 
 def test_remove_column_from_schema(client, schema):
     response = client.put(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={
             "tableDescription": "abcd",
             "columns": [{"name": "id", "type": "bigint", "description": ""}],
@@ -303,7 +303,7 @@ def test_minor_schema_update(client, schema):
     ]
 
     response = client.put(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={"tableDescription": "abcd", "columns": columns},
     )
 
@@ -332,7 +332,7 @@ def test_minor_schema_update(client, schema):
 
 def test_schema_unchanged(client, schema):
     response = client.put(
-        "/schemas/dp:hmpps_use_of_force:v1.0:statement",
+        "/schemas/dp:hmpps_use_of_force:statement",
         json={
             "tableDescription": schema.tableDescription,
             "columns": schema.columns,

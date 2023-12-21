@@ -26,20 +26,20 @@ router = APIRouter()
 logger = structlog.get_logger(__name__)
 
 
-def parse_data_product_id(id) -> Tuple[str, str]:
+def parse_data_product_id(id) -> str:
     try:
-        _, name, version = id.split(":")
+        _, name = id.split(":")
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
-    return name, version
+    return name
 
 
-def parse_schema_id(id) -> Tuple[str, str, str]:
+def parse_schema_id(id) -> Tuple[str, str]:
     try:
-        _, name, version, table_name = id.split(":")
+        _, name, table_name = id.split(":")
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
-    return name, version, table_name
+    return name, table_name
 
 
 @router.get("/data-products/")
@@ -89,9 +89,9 @@ async def update_data_product(
     This will create a new minor version and return a new ID.
     """
     repo = DataProductRepository(session)
-    data_product_name, version = parse_data_product_id(id)
+    data_product_name = parse_data_product_id(id)
 
-    current_metadata = repo.fetch(name=data_product_name, version=version)
+    current_metadata = repo.fetch_latest(name=data_product_name)
 
     if current_metadata is None:
         logger.info("Data product does not exist")
@@ -111,11 +111,11 @@ async def get_metadata(
     """
     Fetch metadata about a data product by ID.
     """
-    data_product_name, version = parse_data_product_id(id)
+    data_product_name = parse_data_product_id(id)
 
     repo = DataProductRepository(session)
 
-    data_product_internal = repo.fetch(name=data_product_name, version=version)
+    data_product_internal = repo.fetch_latest(name=data_product_name)
     if data_product_internal is None:
         logger.info("Data product does not exist")
         raise HTTPException(
@@ -132,10 +132,10 @@ async def create_schema(
     """
     Register a schema (blueprint of your table) for a new table in your Data Product.
     """
-    data_product_name, version, table_name = parse_schema_id(id)
+    data_product_name, table_name = parse_schema_id(id)
 
-    data_product_version = DataProductRepository(session).fetch(
-        name=data_product_name, version=version
+    data_product_version = DataProductRepository(session).fetch_latest(
+        name=data_product_name
     )
     if data_product_version is None:
         raise HTTPException(
@@ -165,9 +165,9 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
     """
     Get a schema that has been registered to a data product by ID.
     """
-    data_product_name, version, table_name = parse_schema_id(id)
-    schema = SchemaRepository(session).fetch(
-        data_product_name=data_product_name, version=version, table_name=table_name
+    data_product_name, table_name = parse_schema_id(id)
+    schema = SchemaRepository(session).fetch_latest(
+        data_product_name=data_product_name, table_name=table_name
     )
     if schema is None:
         raise HTTPException(
@@ -182,10 +182,10 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
 async def update_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
 ) -> SchemaReadWithDataProduct:
-    data_product_name, version, table_name = parse_schema_id(id)
+    data_product_name, table_name = parse_schema_id(id)
     repo = SchemaRepository(session)
-    fetched_schema = repo.fetch(
-        data_product_name=data_product_name, version=version, table_name=table_name
+    fetched_schema = repo.fetch_latest(
+        data_product_name=data_product_name, table_name=table_name
     )
     if fetched_schema is None:
         raise HTTPException(

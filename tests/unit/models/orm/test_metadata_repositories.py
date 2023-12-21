@@ -211,9 +211,9 @@ def test_data_product_with_schema(session):
     assert fetched is not None
     assert fetched.schemas == [schema]
 
-    fetched_schema = schema_repo.fetch("data_product", "v1.1", "my-schema")
+    fetched_schema = schema_repo.fetch_latest("data_product", "my-schema")
     assert fetched_schema == schema
 
 
 def test_no_schema(session):
-    assert SchemaRepository(session).fetch("abc", "v1.0", "def") is None
+    assert SchemaRepository(session).fetch_latest("abc", "def") is None
