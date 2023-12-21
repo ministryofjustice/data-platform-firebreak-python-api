@@ -13,7 +13,11 @@ from ..models.api.metadata_api_models import (
     SchemaRead,
     SchemaReadWithDataProduct,
 )
-from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
+from ..models.orm.metadata_orm_models import (
+    DataProductTable,
+    DataProductVersionTable,
+    SchemaTable,
+)
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
 from ..services.versioning_service import VersioningService
 
@@ -60,7 +64,7 @@ async def register_data_product(
 
     A unique ID will be generated for the initial version of the data product.
     """
-    data_product_internal = DataProductTable(**data_product.model_dump())
+    data_product_internal = DataProductVersionTable(**data_product.model_dump())
     repo = DataProductRepository(session)
 
     try:
@@ -130,17 +134,20 @@ async def create_schema(
     """
     data_product_name, version, table_name = parse_schema_id(id)
 
-    data_product = DataProductRepository(session).fetch(
+    data_product_version = DataProductRepository(session).fetch(
         name=data_product_name, version=version
     )
-    if data_product is None:
+    if data_product_version is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             f"id {id} references a data product that does not exist",
         )
 
+    # TODO: this should create a new version in some cases
     schema_internal = SchemaTable(
-        data_product=data_product, name=table_name, **schema.model_dump()
+        data_product_version=data_product_version,
+        name=table_name,
+        **schema.model_dump(),
     )
     repo = SchemaRepository(session)
     try:
@@ -185,11 +192,11 @@ async def update_schema(
             status.HTTP_404_NOT_FOUND,
             f"id {id} references a data product version that does not exist",
         )
-    versioning_service = VersioningService(fetched_schema.data_product)
+    versioning_service = VersioningService(fetched_schema.data_product_version)
     new_version = versioning_service.update_schema(table_name, **schema.model_dump())
     new_schema = [
         schema for schema in new_version.schemas if schema.name == table_name
     ][0]
     attributes = new_schema.to_attributes()
-    attributes["data_product"] = new_schema.data_product.to_attributes()
+    attributes["data_product"] = new_version.to_attributes()
     return SchemaReadWithDataProduct.model_validate(attributes)

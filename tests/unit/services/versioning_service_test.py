@@ -1,6 +1,6 @@
 import pytest
 
-from daap_api.models.orm.metadata_orm_models import DataProductTable, SchemaTable
+from daap_api.models.orm.metadata_orm_models import DataProductVersionTable, SchemaTable
 from daap_api.services.versioning_service import InvalidUpdate, VersioningService
 
 
@@ -15,7 +15,9 @@ class TestVersioningService:
             name="table2",
             columns=[{"name": "bar", "type": "int", "description": ""}],
         )
-        data_product = DataProductTable(name="abc", domain="test", version="v1.0")
+        data_product = DataProductVersionTable(
+            name="abc", domain="test", version="v1.0"
+        )
         data_product.schemas.append(table1)
         data_product.schemas.append(table2)
         return data_product
@@ -86,4 +88,4 @@ class TestVersioningService:
         a version number already.
         """
         with pytest.raises(InvalidUpdate):
-            VersioningService(DataProductTable(name="new_product"))
+            VersioningService(DataProductVersionTable(name="new_product"))

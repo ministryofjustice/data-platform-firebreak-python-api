@@ -14,7 +14,7 @@ E.g. renaming descriptions, adding tables, adding columns
 import logging
 from enum import Enum
 
-from ..models.orm.metadata_orm_models import DataProductTable, SchemaTable
+from ..models.orm.metadata_orm_models import DataProductVersionTable, SchemaTable
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +59,12 @@ class InvalidUpdate(Exception):
 
 
 class VersioningService:
-    def __init__(self, current_metadata: DataProductTable):
+    def __init__(self, current_metadata: DataProductVersionTable):
         if not current_metadata.version:
             raise InvalidUpdate("Current metadata must have a version set")
         self.current_metadata = current_metadata
 
-    def remove_schemas(self, *schemas_to_remove: str) -> DataProductTable:
+    def remove_schemas(self, *schemas_to_remove: str) -> DataProductVersionTable:
         """
         Remove one or more schemas from the next version of the data
         product.

@@ -4,7 +4,7 @@ from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, aliased
 
-from .metadata_orm_models import DataProductTable, SchemaTable
+from .metadata_orm_models import DataProductTable, DataProductVersionTable, SchemaTable
 
 
 class DataProductRepository:
@@ -13,46 +13,61 @@ class DataProductRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create(self, data_product: DataProductTable):
+    def create(self, data_product_version: DataProductVersionTable):
         """
-        Attempt to save a data product to the database
+        Attempt to create an initial version of a data product.
         Raises IntegrityError if a unique constraint is violated.
         """
+        self.session.add(data_product_version)
+        data_product = DataProductTable(
+            current_version=data_product_version, name=data_product_version.name
+        )
         self.session.add(data_product)
         self.session.commit()
-        self.session.refresh(data_product)
-        return data_product
+        self.session.refresh(data_product_version)
+        return data_product_version
 
-    def fetch(self, name: str, version: str) -> Optional[DataProductTable]:
+    def update(
+        self, data_product: DataProductTable, new_version: DataProductVersionTable
+    ):
+        """
+        Update a data product to a new version
+        """
+        data_product.current_version = new_version
+        self.session.add(new_version)
+        self.session.add(
+            data_product,
+        )
+
+        self.session.commit()
+        self.session.refresh(new_version)
+        return new_version
+
+    def fetch(self, name: str, version: str) -> Optional[DataProductVersionTable]:
         """
         Load a data product by name and version
         """
         return self.session.execute(
-            select(DataProductTable).filter_by(name=name, version=version)
+            select(DataProductVersionTable).filter_by(name=name, version=version)
         ).scalar()
 
-    def fetch_latest(self, name: str) -> Optional[DataProductTable]:
+    def fetch_latest(self, name: str) -> Optional[DataProductVersionTable]:
         """
         Load the latest version of a data product by name
         """
         return self.session.execute(
-            select(DataProductTable)
+            select(DataProductVersionTable, DataProductVersionTable.data_product)
+            .select_from(DataProductTable)
+            .join(DataProductVersionTable, DataProductTable.current_version)
             .filter_by(name=name)
-            .order_by(DataProductTable.version.desc())
-            .limit(1)
         ).scalar()
 
-    def list(self) -> Sequence[DataProductTable]:
-        other = aliased(DataProductTable)
-        subquery = (
-            select(other.id)
-            .where(other.name == DataProductTable.name)
-            .where(other.version > DataProductTable.version)
-        )
+    def list(self) -> Sequence[DataProductVersionTable]:
         return (
             self.session.execute(
-                select(DataProductTable)
-                .where(~exists(subquery))
+                select(DataProductVersionTable)
+                .select_from(DataProductTable)
+                .join(DataProductVersionTable, DataProductTable.current_version)
                 .order_by(DataProductTable.name)
             )
             .scalars()
@@ -84,8 +99,8 @@ class SchemaRepository:
         """
         return self.session.execute(
             select(SchemaTable)
-            .join(DataProductTable)
+            .join(DataProductVersionTable, SchemaTable.data_product_version)
             .where(SchemaTable.name == table_name)
-            .where(DataProductTable.name == data_product_name)
-            .where(DataProductTable.version == version)
+            .where(DataProductVersionTable.name == data_product_name)
+            .where(DataProductVersionTable.version == version)
         ).scalar()

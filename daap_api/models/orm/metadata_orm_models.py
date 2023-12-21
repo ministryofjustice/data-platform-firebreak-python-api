@@ -26,8 +26,10 @@ class SchemaTable(Base):
         primary_key=True,
     )
 
-    data_product_id: Mapped[int] = mapped_column(ForeignKey("data_products.id"))
-    data_product: Mapped["DataProductTable"] = relationship(back_populates="schemas")
+    data_product_id: Mapped[int] = mapped_column(ForeignKey("data_product_versions.id"))
+    data_product_version: Mapped["DataProductVersionTable"] = relationship(
+        back_populates="schemas"
+    )
 
     name: Mapped[str] = mapped_column(
         index=True,
@@ -43,7 +45,7 @@ class SchemaTable(Base):
 
     @property
     def external_id(self):
-        return f"{self.data_product.external_id}:{self.name}"
+        return f"{self.data_product_version.external_id}:{self.name}"
 
     def to_attributes(self):
         """
@@ -63,6 +65,27 @@ class SchemaTable(Base):
 
 
 class DataProductTable(Base):
+    __tablename__ = "data_products"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+    )
+    name: Mapped[str] = mapped_column(
+        index=True,
+    )
+    current_version_id: Mapped[int] = mapped_column(
+        ForeignKey("data_product_versions.id")
+    )
+    current_version: Mapped["DataProductVersionTable"] = relationship(
+        back_populates="data_product"
+    )
+
+    @property
+    def external_id(self):
+        return f"dp:{self.name}"
+
+
+class DataProductVersionTable(Base):
     __tablename__ = "data_product_versions"
 
     __table_args__ = (Index("name", "version", unique=True),)
@@ -71,7 +94,12 @@ class DataProductTable(Base):
         primary_key=True,
     )
 
-    schemas: Mapped[list["SchemaTable"]] = relationship(back_populates="data_product")
+    schemas: Mapped[list["SchemaTable"]] = relationship(
+        back_populates="data_product_version"
+    )
+    data_product: Mapped["DataProductTable"] = relationship(
+        back_populates="current_version"
+    )
 
     name: Mapped[str] = mapped_column(
         index=True,
@@ -107,13 +135,13 @@ class DataProductTable(Base):
         version = str(Version.parse(self.version).increment_minor())
         return self.copy(version=version, **kwargs)
 
-    def copy(self, **kwargs) -> DataProductTable:
+    def copy(self, **kwargs) -> DataProductVersionTable:
         columns = self.__table__.columns.keys()
         attributes = {k: getattr(self, k) for k in columns}
         del attributes["id"]
         attributes.update(kwargs)
 
-        return DataProductTable(**attributes)
+        return DataProductVersionTable(**attributes)
 
     @property
     def external_id(self):

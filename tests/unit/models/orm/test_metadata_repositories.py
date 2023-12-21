@@ -6,7 +6,7 @@ from sqlmodel.pool import StaticPool
 from daap_api.config import settings
 from daap_api.db import Base
 from daap_api.models.orm.metadata_orm_models import (
-    DataProductTable,
+    DataProductVersionTable,
     SchemaTable,
     Status,
 )
@@ -27,7 +27,7 @@ def session_fixture():
 
 def test_create_data_product(session):
     repo = DataProductRepository(session)
-    data_product = DataProductTable(
+    data_product = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -46,7 +46,7 @@ def test_create_data_product(session):
 
 def test_cannot_create_existing_data_product(session):
     repo = DataProductRepository(session)
-    data_product = DataProductTable(
+    data_product = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -59,7 +59,7 @@ def test_cannot_create_existing_data_product(session):
     )
     repo.create(data_product)
 
-    duplicate = DataProductTable(
+    duplicate = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -77,7 +77,7 @@ def test_cannot_create_existing_data_product(session):
 
 def test_fetch_latest_data_product(session):
     repo = DataProductRepository(session)
-    v1 = DataProductTable(
+    v1 = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -91,7 +91,7 @@ def test_fetch_latest_data_product(session):
 
     repo.create(v1)
 
-    data_product = DataProductTable(
+    new_version = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -104,10 +104,10 @@ def test_fetch_latest_data_product(session):
         version="v1.1",
     )
 
-    repo.create(data_product)
+    repo.update(v1.data_product, new_version)
     fetched = repo.fetch_latest(name="data_product")
 
-    assert fetched == data_product
+    assert fetched == new_version
 
 
 def test_no_latest_data_product(session):
@@ -119,7 +119,7 @@ def test_no_latest_data_product(session):
 
 def test_fetch_data_product(session):
     repo = DataProductRepository(session)
-    v1 = DataProductTable(
+    v1 = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -130,7 +130,7 @@ def test_fetch_data_product(session):
         retentionPeriod=365,
         dpiaRequired=True,
     )
-    v2 = DataProductTable(
+    v2 = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -160,7 +160,7 @@ def test_no_data_product(session):
 
 
 def test_create_data_product_with_schema(session):
-    data_product = DataProductTable(
+    data_product = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -174,14 +174,17 @@ def test_create_data_product_with_schema(session):
     )
     DataProductRepository(session).create(data_product)
     schema = SchemaTable(
-        name="my-schema", tableDescription="abc", columns=[], data_product=data_product
+        name="my-schema",
+        tableDescription="abc",
+        columns=[],
+        data_product_version=data_product,
     )
     SchemaRepository(session).create(schema)
     assert schema.id is not None
 
 
 def test_data_product_with_schema(session):
-    data_product = DataProductTable(
+    data_product = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
@@ -196,7 +199,10 @@ def test_data_product_with_schema(session):
     data_product_repo = DataProductRepository(session)
     data_product_repo.create(data_product)
     schema = SchemaTable(
-        name="my-schema", tableDescription="abc", columns=[], data_product=data_product
+        name="my-schema",
+        tableDescription="abc",
+        columns=[],
+        data_product_version=data_product,
     )
     schema_repo = SchemaRepository(session)
     schema_repo.create(schema)

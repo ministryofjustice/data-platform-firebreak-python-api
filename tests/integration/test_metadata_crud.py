@@ -1,7 +1,11 @@
 import pytest
 from fastapi import status
 
-from daap_api.models.orm.metadata_orm_models import DataProductTable, SchemaTable
+from daap_api.models.orm.metadata_orm_models import (
+    DataProductTable,
+    DataProductVersionTable,
+    SchemaTable,
+)
 
 SAMPLE_COLUMNS = [
     {"name": "id", "type": "bigint", "description": ""},
@@ -27,8 +31,8 @@ SAMPLE_COLUMNS = [
 ]
 
 
-def data_product():
-    return DataProductTable(
+def data_product_version():
+    return DataProductVersionTable(
         name="hmpps_use_of_force",
         description="Data product for hmpps_use_of_force dev data",
         domain="HMPPS",
@@ -42,12 +46,12 @@ def data_product():
     )
 
 
-def schema(data_product):
+def schema(data_product_version):
     return SchemaTable(
         name="statement",
         columns=SAMPLE_COLUMNS,
         tableDescription="desc",
-        data_product=data_product,
+        data_product_version=data_product_version,
     )
 
 
@@ -100,7 +104,7 @@ def test_create_metadata(client):
 
 
 def test_read_metadata(client, session):
-    session.add(data_product())
+    session.add(data_product_version())
     session.commit()
 
     response = client.get("/data-products/dp:hmpps_use_of_force:v1.0")
@@ -124,7 +128,11 @@ def test_read_metadata(client, session):
 
 
 def test_list_data_products(client, session):
-    session.add(data_product())
+    initial_version = data_product_version()
+    session.add(initial_version)
+    session.add(
+        DataProductTable(current_version=initial_version, name=initial_version.name)
+    )
     session.commit()
 
     response = client.get("/data-products")
@@ -157,7 +165,11 @@ def test_no_data_products(client, session):
 
 
 def test_create_schema(client, session, statement_columns):
-    session.add(data_product())
+    initial_version = data_product_version()
+    session.add(initial_version)
+    session.add(
+        DataProductTable(current_version=initial_version, name=initial_version.name)
+    )
     session.commit()
 
     response = client.post(
@@ -187,7 +199,13 @@ def test_create_schema_for_non_existent_product(client, session, statement_colum
 
 
 def test_create_schema_that_already_exists(client, session, statement_columns):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
     session.add(existing_schema)
@@ -204,7 +222,13 @@ def test_create_schema_that_already_exists(client, session, statement_columns):
 
 
 def test_read_schema(client, statement_columns, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
     session.add(existing_schema)
@@ -221,7 +245,13 @@ def test_read_schema(client, statement_columns, session):
 
 
 def test_read_data_product_with_schema(client, statement_columns, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
     session.add(existing_schema)
@@ -296,7 +326,13 @@ def test_update_missing_data_product(client):
 
 
 def test_update_data_product(client, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     session.add(existing_data_product)
     session.commit()
 
@@ -333,7 +369,13 @@ def test_update_data_product(client, session):
 
 
 def test_remove_column_from_schema(client, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
     session.add(existing_schema)
@@ -370,7 +412,13 @@ def test_remove_column_from_schema(client, session):
 
 
 def test_minor_schema_update(client, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
+    session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
     session.add(existing_schema)
@@ -432,9 +480,14 @@ def test_minor_schema_update(client, session):
 
 
 def test_schema_unchanged(client, session):
-    existing_data_product = data_product()
+    existing_data_product = data_product_version()
     existing_schema = schema(existing_data_product)
     session.add(existing_data_product)
+    session.add(
+        DataProductTable(
+            current_version=existing_data_product, name=existing_data_product.name
+        )
+    )
     session.add(existing_schema)
 
     response = client.put(
