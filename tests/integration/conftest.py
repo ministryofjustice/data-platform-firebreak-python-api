@@ -1,4 +1,6 @@
 import pytest
+from alembic import command
+from alembic.config import Config
 from factory import SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from fastapi.testclient import TestClient
@@ -16,6 +18,13 @@ from daap_api.models.orm.metadata_orm_models import (
 )
 
 
+def run_migrations():
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri_test)
+
+    command.upgrade(alembic_cfg, "head")
+
+
 @pytest.fixture()
 def client(session: Session):
     def get_session_override():
@@ -31,11 +40,10 @@ def client(session: Session):
 @pytest.fixture()
 def session():
     engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
+    run_migrations()
+
     with Session(engine) as session:
         yield session
-        Base.metadata.drop_all(engine)
         cache_backend.response_store.clear()
         cache_backend.keys.clear()
 
