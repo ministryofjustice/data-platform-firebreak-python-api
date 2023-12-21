@@ -6,6 +6,13 @@ from sqlalchemy.orm import DeclarativeBase, Session
 
 
 class Base(DeclarativeBase):
+    def copy(self, **kwargs) -> Self:
+        columns = self.__table__.columns.keys()
+        attributes = {k: getattr(self, k) for k in columns}
+        del attributes["id"]
+        attributes.update(kwargs)
+        return self.__class__(**attributes)
+
     def changed_fields(self, other: Self):
         result = set()
 

@@ -60,13 +60,6 @@ class SchemaTable(Base):
             "tableDescription": self.tableDescription,
         }
 
-    def copy(self, **kwargs) -> SchemaTable:
-        columns = self.__table__.columns.keys()
-        attributes = {k: getattr(self, k) for k in columns}
-        del attributes["id"]
-        attributes.update(kwargs)
-        return SchemaTable(**attributes)
-
 
 class DataProductTable(Base):
     __tablename__ = "data_products"
@@ -140,13 +133,6 @@ class DataProductVersionTable(Base):
     def next_minor_version(self, **kwargs):
         version = str(Version.parse(self.version).increment_minor())
         return self.copy(version=version, **kwargs)
-
-    def copy(self, **kwargs) -> DataProductVersionTable:
-        columns = self.__table__.columns.keys()
-        attributes = {k: getattr(self, k) for k in columns}
-        del attributes["id"]
-        attributes.update(kwargs)
-        return DataProductVersionTable(**attributes)
 
     @property
     def external_id(self):
