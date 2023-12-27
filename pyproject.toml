@@ -25,6 +25,7 @@ fastapi-azure-auth = "^4.3.0"
 redis = "^5.0.1"
 asgi-idempotency-header = "^0.2.0"
 psycopg2 = "^2.9.9"
+alembic = "^1.13.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
