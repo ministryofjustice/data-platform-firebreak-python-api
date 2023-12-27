@@ -24,7 +24,7 @@ Things that worked well out of the box:
 
 Things that required a bit more configuration:
 
-- Integrating an ORM
+- Integrating an ORM (Object-relational mapper)
 - Integrating auth
 
 Relevant resources:
@@ -48,10 +48,12 @@ Alternatives:
 We are operating under the assumption that we want to maintain control over our metadata store,
 rather than tightly coupling it to our choice of data catalogue.
 
-Previously we have been using an S3 bucket & JSON as the metadata store, but S3 is not designed to function as a database, and we think switching to a database would make
-create/read/update/delete operations simpler.
+Previously we have been using an S3 bucket & JSON as the metadata store.
+S3 is not designed to function as a database, and we think
+switching to a database would make CRUD operations (Create / Read / Update / Delete) simpler.
 
-We may also want to run ad-hoc statistics queries or visualise the health of the platform on a dashboard, which we can't do directly with S3.
+We may also want to run ad-hoc statistics queries
+or visualise the health of the platform on a dashboard, which we can't do directly with S3.
 
 We decided to use PostgreSQL because it's Open Source and supports SQL.
 We can use any SQL ORM to simplify the persistence code.
@@ -69,7 +71,8 @@ Alternatives:
 SQLAlchemy is a mature ORM (Object-relational mapper).
 It maps database tables to Python objects and generates SQL for you.
 
-Alembic is a tool written by the same author to manage database migrations. It helps you version your database schema so that
+Alembic is a tool written by the same author to manage database migrations.
+It helps you version your database schema so that
 you can automatically bring the schema up to date when deploying
 the application.
 
@@ -88,16 +91,18 @@ Alternatives:
 - SQLAlchemy core without the ORM
 - Plain SQL
 
-## Cloud platform
+## Cloud Platform
 
-We're hosting this proof of concept in the MOJ cloud platform, because it's
-a relatively self contained service that can run in a Kubernetes cluster, so there
-is no need for us to write our own terraform.
+We're hosting this proof of concept in MOJ's [Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/),
+because it's a self contained service designed for hosting apps on a centralised platform.
+This means that there are modules already available that provide the functionality
+we need for hosting an api, as well as other internal apis hosted there that we can learn from.
 
 All of the configuration can be injected via environment variables.
 
-Currently, this proof of concept is not talking to the rest of the data platform.
-We would need connectivity to the public data catalogue to make our metadata visible to consumers, and connectivity to the glue catalogue to expose metadata to the ingestion pipeline.
+Currently, this proof of concept is not talking to the rest of the Data Platform.
+We would need connectivity to the public data catalogue to make our metadata visible to consumers,
+and connectivity to the glue catalogue to expose metadata to the ingestion pipeline.
 
 ## New API design
 
@@ -123,12 +128,55 @@ Currently AWS API gateway handles various concerns:
 - HTTPS
 - Authentication/Authorization
 - Documentation hosting
-- Web application firewall
+- Web Application Firewall (WAF)
 - Rate limiting
 - Logging and monitoring
 - Versioning / lifecycle management
 
 Some of this could be handled by the python framework, or a load balancer.
+
+Current state of concerns:
+
+- HTTPS (:question:)
+- Authentication/Authorisation
+  (:heavy_check_mark: - handled by [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/),
+  a python library for handling Azure Active Directory auth flow)
+- Documentation hosting (:heavy_check_mark: - handled by FastAPI)
+- Web Application Firewall (WAF)
+  (:heavy_check_mark: - [available via Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/networking/modsecurity.html))
+- Rate limiting (:question:)
+- Logging and monitoring
+  (:heavy_check_mark: - [handled through Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#monitoring))
+- Versioning / lifecycle management (:question:)
+
+## Authentication and authorisation
+
+Data Platform are moving towards using Azure Active Directory (AAD, also now known as Entra ID)
+as the central authentication and authorisation mechanism for Data Platform.
+For this api, one of the considerations for the auth flow is that the Swagger UI (the `/docs` endpoint)
+is a [single-page application](https://learn.microsoft.com/en-us/entra/identity-platform/v2-app-types#single-page-apps),
+which has security implications as the application cannot securely store a client secret
+without risk of exposing the secret and compromising the app.
+
+Instead, Microsoft recommends using the OAuth 2.0 authorization code grant flow, which
+_"enables a client application to obtain authorized access to protected resources like web APIs"_
+
+We are using the [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/)
+python library to handle the integration of this auth flow (_PKCE with authorisation code grant_)
+with FastAPI.
+
+The registration process is very clearly explained in the [tutorial documentation for the library](https://intility.github.io/fastapi-azure-auth/single-tenant/azure_setup).
+It involves [registering two apps in the Azure Active Directory Portal](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps)
+(one for the api, one for the swagger UI),
+adding the requisite config settings to the app, and then testing out an endpoint.
+
+We can secure any endpoints behind this authentication flow [by adding a requirement in the endpoint definition](https://intility.github.io/fastapi-azure-auth/single-tenant/fastapi_configuration#adding-authentication-to-our-view).
+
+We can also [specify requirements for the user for any specific endpoint](https://intility.github.io/fastapi-azure-auth/usage-and-faq/locking_down_on_roles)
+(e.g. has a specific role associated with their user, or belongs to a specific group).
+For example requiring a 'Data Producer' or 'Data Steward' role for a registration endpoint.
+
+Our apps required admin approval due to settings within AAD.
 
 ## Should data operations be part of the same service as the metadata store?
 
@@ -137,4 +185,5 @@ We're not sure yet!
 We are using presigned S3 URLs as the ingestion mechanism because it provides an easy
 way to perform a single upload of files up to 5GB.
 
-We did not bring this into the proof of concept, but it could be exposed via the same API. However, we are assuming that the ingestion pipeline itself will run within the modernisation platform environment.
+We did not bring this into the proof of concept, but it could be exposed via the same API.
+However, we are assuming that the ingestion pipeline itself will run within the modernisation platform environment.
