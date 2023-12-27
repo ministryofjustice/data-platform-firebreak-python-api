@@ -176,6 +176,10 @@ We can also [specify requirements for the user for any specific endpoint](https:
 (e.g. has a specific role associated with their user, or belongs to a specific group).
 For example requiring a 'Data Producer' or 'Data Steward' role for a registration endpoint.
 
+Any direct usage of the api not going through the swagger UI should use the
+[Client Credential Flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow),
+as described in [the fastapi-azure-auth docs](https://intility.github.io/fastapi-azure-auth/usage-and-faq/calling_your_apis_from_python).
+
 Our apps required admin approval due to settings within AAD.
 
 ## Should data operations be part of the same service as the metadata store?
