@@ -31,7 +31,7 @@ class Base(DeclarativeBase):
 
 from .config import settings
 
-engine = create_engine(settings.database_uri, echo=True)
+engine = create_engine(settings.database_url, echo=True)
 
 
 def create_db_and_tables():

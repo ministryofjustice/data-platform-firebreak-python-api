@@ -4,7 +4,7 @@ import json
 import re
 
 import structlog
-from fastapi import FastAPI, Request, Response, Security
+from fastapi import FastAPI, Request, Response, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 from idempotency_header_middleware import IdempotencyHeaderMiddleware
@@ -70,11 +70,6 @@ app.add_middleware(
     idempotency_header_key="x-idempotent-key",
     applicable_methods=IDEMPOTENT_KEY_METHODS,
 )
-
-
-@app.get("/", dependencies=[Security(azure_scheme)])
-async def root():
-    return {"message": "Hello World"}
 
 
 async def set_body(request: Request, body: bytes):
@@ -145,3 +140,18 @@ async def logging_middleware(request: Request, call_next) -> Response:
     response: Response = await call_next(request)
 
     return response
+
+
+# no authentication needed
+@app.get(
+    "/health",
+    status_code=status.HTTP_200_OK,
+    name="Get Health Status [NO AUTH REQUIRED]",
+)
+async def get_health_status():
+    return "OK"
+
+
+@app.get("/", dependencies=[Security(azure_scheme)])
+async def root():
+    return {"message": "Hello World"}

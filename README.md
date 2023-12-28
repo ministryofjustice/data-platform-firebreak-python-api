@@ -11,7 +11,7 @@ This proof of concept will explore migrating the DaaP API to a single python con
 - This project requires python 3.11 and Postgres.
 - To run postgres locally via docker, run `docker-compose up -d`
 - Run `poetry install` to install python dependencies
-- Run `poetry run alembic head` to create the development database tables
+- Run `poetry run alembic upgrade head` to create the development database tables
 
 ### Configuration
 

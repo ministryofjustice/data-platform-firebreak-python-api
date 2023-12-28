@@ -18,7 +18,7 @@ from daap_api.models.orm.metadata_repositories import (
 
 @pytest.fixture(name="session")
 def session_fixture():
-    engine = create_engine(settings.database_uri_test, poolclass=StaticPool)
+    engine = create_engine(settings.database_url_test, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
