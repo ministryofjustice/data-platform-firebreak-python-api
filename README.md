@@ -24,9 +24,9 @@ e.g. to disable Azure Active Directory authentication:
 ### Starting the API
 
 - Run `poetry run uvicorn daap_api.main:app --reload`
-- The API is served at http://127.0.0.1:8000/
+- The API is served at http://localhost:8000/
 - Example endpoint: http://localhost:8000/data-products
-- The docs are served at http://127.0.0.1:8000/redoc
+- The docs are served at http://localhost:8000/docs or http://localhost:8000/redoc
 
 ### Running the tests
 
@@ -57,3 +57,5 @@ Useful commands:
 ## Architecture notes
 
 See [docs/architecture.md](./docs/architecture.md)
+
+[Visualising the data model](./docs/architecture.md#visualising-the-data-model)

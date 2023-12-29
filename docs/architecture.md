@@ -43,6 +43,17 @@ Alternatives:
 - Sanic
 - Flask
 
+### Visualising the data model
+
+An open-source tool `erdantic` can be used to visualise the entity relationship diagrams (ERDs) for pydantic data models.
+
+To use this tool to visualise the existing data models for the api:
+
+1. [Install graphvis and pygraphvis](https://pygraphviz.github.io/documentation/stable/install.html#macos)
+2. [Install erdantic](https://erdantic.drivendata.org/v0.2/#installation)
+3. If it isn't added already, add the root directory to the `PYTHONPATH`, e.g. from the root directory: `export PYTHONPATH="${PYTHONPATH}:${PWD}`
+4. [run erdantic using the full dot path to the data model class](https://erdantic.drivendata.org/v0.2/#quick-usage) (or module containing the classes): `erdantic daap_api.models.api.metadata_api_models -o diagram.png`
+
 ## PostgreSQL
 
 We are operating under the assumption that we want to maintain control over our metadata store,
