@@ -137,17 +137,17 @@ Some of this could be handled by the python framework, or a load balancer.
 
 Current state of concerns:
 
-- HTTPS (:question:)
+- HTTPS (❓)
 - Authentication/Authorisation
-  (:heavy_check_mark: - handled by [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/),
+  (✅ - handled by [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/),
   a python library for handling Azure Active Directory auth flow)
-- Documentation hosting (:heavy_check_mark: - handled by FastAPI)
+- Documentation hosting (✅ - handled by FastAPI)
 - Web Application Firewall (WAF)
-  (:heavy_check_mark: - [available via Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/networking/modsecurity.html))
-- Rate limiting (:question:)
+  (✅ - [available via Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/networking/modsecurity.html))
+- Rate limiting (❓)
 - Logging and monitoring
-  (:heavy_check_mark: - [handled through Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#monitoring))
-- Versioning / lifecycle management (:question:)
+  (✅ - [handled through Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#monitoring))
+- Versioning / lifecycle management (❓)
 
 ## Authentication and authorisation
 
