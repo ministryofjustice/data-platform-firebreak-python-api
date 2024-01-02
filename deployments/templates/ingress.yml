@@ -11,7 +11,7 @@ metadata:
       SecRuleEngine On
       SecDefaultAction "phase:2,pass,log,tag:github_team=data-platform-labs"
 spec:
-  ingressClassName: default
+  ingressClassName: modsec
   tls:
     - hosts:
         - ${NAMESPACE}.apps.live.cloud-platform.service.justice.gov.uk
