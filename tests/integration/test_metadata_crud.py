@@ -255,7 +255,7 @@ def test_remove_column_from_schema(client, schema):
         "tableDescription": "abcd",
         "columns": [{"name": "id", "type": "bigint", "description": ""}],
         "id": "dp:hmpps_use_of_force:v2.0:statement",
-        "data_product": {
+        "dataProduct": {
             "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
             "dataProductOwnerDisplayName": "Data Platform Labs",
             "description": "Data product for hmpps_use_of_force dev data",
@@ -312,7 +312,7 @@ def test_minor_schema_update(client, schema):
         "tableDescription": "abcd",
         "columns": columns,
         "id": "dp:hmpps_use_of_force:v1.1:statement",
-        "data_product": {
+        "dataProduct": {
             "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
             "dataProductOwnerDisplayName": "Data Platform Labs",
             "description": "Data product for hmpps_use_of_force dev data",
@@ -344,7 +344,7 @@ def test_schema_unchanged(client, schema):
         "tableDescription": "desc",
         "columns": schema.columns,
         "id": "dp:hmpps_use_of_force:v1.0:statement",
-        "data_product": {
+        "dataProduct": {
             "dataProductOwner": "dataplatformlabs@digital.justice.gov.uk",
             "dataProductOwnerDisplayName": "Data Platform Labs",
             "description": "Data product for hmpps_use_of_force dev data",

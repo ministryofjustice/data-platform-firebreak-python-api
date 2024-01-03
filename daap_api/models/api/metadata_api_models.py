@@ -175,4 +175,4 @@ class DataProductRead(DataProductBase):
 
 
 class SchemaReadWithDataProduct(SchemaRead):
-    data_product: DataProductRead = Field(alias="data_product")  # Inconsistency
+    data_product: DataProductRead

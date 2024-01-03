@@ -209,6 +209,6 @@ async def update_schema(
         schema for schema in new_version.schemas if schema.name == table_name
     ][0]
     attributes = new_schema.to_attributes()
-    attributes["data_product"] = new_version.to_attributes()
-    attributes["data_product"]["id"] = new_version.data_product.external_id
+    attributes["dataProduct"] = new_version.to_attributes()
+    attributes["dataProduct"]["id"] = new_version.data_product.external_id
     return SchemaReadWithDataProduct.model_validate(attributes)
