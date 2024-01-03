@@ -58,6 +58,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    url = config.get_main_option("sqlalchemy.url")
+    alembic_config = config.get_section(config.config_ini_section)
+    assert url is not None
+    assert alembic_config is not None
+    alembic_config["sqlalchemy.url"] = url
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
