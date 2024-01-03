@@ -21,7 +21,7 @@ from ..models.orm.metadata_orm_models import (
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
 from ..services.versioning_service import VersioningService
 
-v1_router = APIRouter()
+v1_router = APIRouter(prefix="/v1", tags=["v1"])
 
 logger = structlog.get_logger(__name__)
 
@@ -30,7 +30,8 @@ def parse_data_product_id(id) -> str:
     try:
         _, name = id.split(":")
     except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            detail=f"Invalid id: {id}")
     return name
 
 
@@ -38,7 +39,8 @@ def parse_schema_id(id) -> Tuple[str, str]:
     try:
         _, name, table_name = id.split(":")
     except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Invalid id: {id}")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            detail=f"Invalid id: {id}")
     return name, table_name
 
 
@@ -64,7 +66,8 @@ async def register_data_product(
 
     A unique ID will be generated for the initial version of the data product.
     """
-    data_product_internal = DataProductVersionTable(**data_product.model_dump())
+    data_product_internal = DataProductVersionTable(
+        **data_product.model_dump())
     repo = DataProductRepository(session)
 
     try:
@@ -100,7 +103,8 @@ async def update_data_product(
         )
 
     versioning_service = VersioningService(current_metadata)
-    new_version = versioning_service.update_metadata(**data_product.model_dump())
+    new_version = versioning_service.update_metadata(
+        **data_product.model_dump())
     repo.update(current_metadata.data_product, new_version)
     return DataProductRead.from_model(new_version)
 
