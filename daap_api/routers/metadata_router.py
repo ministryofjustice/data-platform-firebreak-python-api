@@ -21,7 +21,7 @@ from ..models.orm.metadata_orm_models import (
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
 from ..services.versioning_service import VersioningService
 
-v1_router = APIRouter()
+v1_router = APIRouter(prefix="/v1", tags=["v1"])
 
 logger = structlog.get_logger(__name__)
 

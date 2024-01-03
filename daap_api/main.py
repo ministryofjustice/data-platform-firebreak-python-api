@@ -44,7 +44,7 @@ app = FastAPI(
     },
 )
 
-app.include_router(metadata_router.v1_router, prefix="/v1")
+app.include_router(metadata_router.v1_router)
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
