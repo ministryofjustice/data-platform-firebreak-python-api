@@ -21,7 +21,7 @@ from ..models.orm.metadata_orm_models import (
 from ..models.orm.metadata_repositories import DataProductRepository, SchemaRepository
 from ..services.versioning_service import VersioningService
 
-router = APIRouter()
+v1_router = APIRouter()
 
 logger = structlog.get_logger(__name__)
 
@@ -42,7 +42,7 @@ def parse_schema_id(id) -> Tuple[str, str]:
     return name, table_name
 
 
-@router.get("/data-products/")
+@v1_router.get("/data-products/")
 async def list_data_products(
     session: Session = session_dependency,
 ) -> list[DataProductRead]:
@@ -53,7 +53,7 @@ async def list_data_products(
     return [DataProductRead.from_model(dp) for dp in repo.list()]
 
 
-@router.post("/data-products/")
+@v1_router.post("/data-products/")
 async def register_data_product(
     data_product: DataProductCreate,
     session: Session = session_dependency,
@@ -78,7 +78,7 @@ async def register_data_product(
     return DataProductRead.from_model(data_product_internal)
 
 
-@router.put("/data-products/{id}")
+@v1_router.put("/data-products/{id}")
 async def update_data_product(
     id: str,
     data_product: DataProductUpdate,
@@ -105,7 +105,7 @@ async def update_data_product(
     return DataProductRead.from_model(new_version)
 
 
-@router.get("/data-products/{id}")
+@v1_router.get("/data-products/{id}")
 async def get_metadata(
     id: str, session: Session = session_dependency
 ) -> DataProductRead:
@@ -126,7 +126,7 @@ async def get_metadata(
     return DataProductRead.from_model(data_product_internal)
 
 
-@router.post("/schemas/{id}")
+@v1_router.post("/schemas/{id}")
 async def create_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
 ) -> SchemaRead:
@@ -161,7 +161,7 @@ async def create_schema(
     return SchemaRead.model_validate(schema_internal.to_attributes())
 
 
-@router.get("/schemas/{id}")
+@v1_router.get("/schemas/{id}")
 async def get_schema(id: str, session: Session = session_dependency) -> SchemaRead:
     """
     Get a schema that has been registered to a data product by ID.
@@ -179,7 +179,7 @@ async def get_schema(id: str, session: Session = session_dependency) -> SchemaRe
     return SchemaRead.model_validate(schema.to_attributes(), strict=True)
 
 
-@router.put("/schemas/{id}")
+@v1_router.put("/schemas/{id}")
 async def update_schema(
     id: str, schema: SchemaCreate, session: Session = session_dependency
 ) -> SchemaReadWithDataProduct:
