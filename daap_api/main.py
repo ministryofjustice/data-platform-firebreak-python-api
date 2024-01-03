@@ -12,7 +12,6 @@ from idempotency_header_middleware.backends import MemoryBackend
 from pydantic import AnyHttpUrl, computed_field
 
 from .config import settings, setup_logging
-from .db import create_db_and_tables
 from .routers import metadata_router
 
 IDEMPOTENT_KEY_METHODS = ["POST", "PATCH"]
@@ -24,8 +23,6 @@ ID_REGEX = re.compile(
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
-
-    create_db_and_tables()
 
     if settings.auth_enabled:
         await azure_scheme.openid_config.load_config()
