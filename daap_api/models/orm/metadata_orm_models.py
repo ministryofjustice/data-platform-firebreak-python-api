@@ -38,7 +38,7 @@ class SchemaTable(Base):
 
     name: Mapped[str] = mapped_column(index=True)
 
-    tableDescription: Mapped[str]
+    table_description: Mapped[str]
 
     columns: Mapped[list[dict[str, str]]] = mapped_column(
         JSON,
@@ -57,7 +57,7 @@ class SchemaTable(Base):
             "id": self.external_id,
             "columns": self.columns,
             "name": self.name,
-            "tableDescription": self.tableDescription,
+            "tableDescription": self.table_description,
         }
 
 
@@ -104,19 +104,19 @@ class DataProductVersionTable(Base):
         index=True,
     )
     domain: Mapped[str]
-    dataProductOwner: Mapped[str]
-    dataProductOwnerDisplayName: Mapped[str]
-    dataProductMaintainer: Mapped[Optional[str]]
-    dataProductMaintainerDisplayName: Mapped[Optional[str]]
+    data_product_owner: Mapped[str]
+    data_product_owner_display_name: Mapped[str]
+    data_product_maintainer: Mapped[Optional[str]]
+    data_product_maintainer_display_name: Mapped[Optional[str]]
     status: Mapped[Status]
     email: Mapped[str]
-    retentionPeriod: Mapped[int]
-    dpiaRequired: Mapped[bool]
-    dpiaLocation: Mapped[Optional[str]]
-    lastUpdated: Mapped[Optional[datetime]]
-    creationDate: Mapped[Optional[datetime]]
-    s3Location: Mapped[Optional[str]]
-    rowCount: Mapped[Optional[int]]
+    retention_period: Mapped[int]
+    dpia_required: Mapped[bool]
+    dpia_location: Mapped[Optional[str]]
+    last_updated: Mapped[Optional[datetime]]
+    creation_date: Mapped[Optional[datetime]]
+    s3_location: Mapped[Optional[str]]
+    row_count: Mapped[Optional[int]]
 
     version: Mapped[str] = mapped_column(default="v1.0")
 
@@ -148,15 +148,15 @@ class DataProductVersionTable(Base):
             "version": self.version,
             "description": self.description,
             "status": self.status,
-            "retentionPeriod": self.retentionPeriod,
-            "dpiaRequired": self.dpiaRequired,
+            "retentionPeriod": self.retention_period,
+            "dpiaRequired": self.dpia_required,
             "domain": self.domain,
-            "dataProductOwner": self.dataProductOwner,
-            "dataProductOwnerDisplayName": self.dataProductOwnerDisplayName,
+            "dataProductOwner": self.data_product_owner,
+            "dataProductOwnerDisplayName": self.data_product_owner_display_name,
             "email": self.email,
             "tags": self.tags,
-            "dpiaLocation": self.dpiaLocation,
-            "lastUpdated": self.lastUpdated,
-            "s3Location": self.s3Location,
-            "rowCount": self.rowCount,
+            "dpiaLocation": self.dpia_location,
+            "lastUpdated": self.last_updated,
+            "s3Location": self.s3_location,
+            "rowCount": self.row_count,
         }

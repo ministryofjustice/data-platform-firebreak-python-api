@@ -31,12 +31,12 @@ def test_create_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
     )
 
     repo.create(data_product_version)
@@ -50,12 +50,12 @@ def test_cannot_create_existing_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
     )
     repo.create(data_product_version)
 
@@ -63,12 +63,12 @@ def test_cannot_create_existing_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
     )
 
     with pytest.raises(repo.IntegrityError):
@@ -81,12 +81,12 @@ def test_fetch_latest_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
     )
 
     repo.create(v1)
@@ -95,12 +95,12 @@ def test_fetch_latest_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.published,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
         version="v1.1",
     )
 
@@ -123,23 +123,23 @@ def test_fetch_data_product(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
     )
     v2 = DataProductVersionTable(
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs Jr",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs Jr",
         status=Status.draft,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
         version="v2.0",
     )
 
@@ -164,18 +164,18 @@ def test_create_data_product_with_schema(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.published,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
         version="v1.1",
     )
     DataProductRepository(session).create(data_product_version)
     schema = SchemaTable(
         name="my-schema",
-        tableDescription="abc",
+        table_description="abc",
         columns=[],
         data_product_version=data_product_version,
     )
@@ -188,19 +188,19 @@ def test_data_product_with_schema(session):
         name="data_product",
         domain="hmpps",
         description="example data product",
-        dataProductOwner="joe.bloggs@justice.gov.uk",
-        dataProductOwnerDisplayName="Joe bloggs",
+        data_product_owner="joe.bloggs@justice.gov.uk",
+        data_product_owner_display_name="Joe bloggs",
         status=Status.published,
         email="data-product-contact@justice.gov.uk",
-        retentionPeriod=365,
-        dpiaRequired=True,
+        retention_period=365,
+        dpia_required=True,
         version="v1.1",
     )
     data_product_repo = DataProductRepository(session)
     data_product_repo.create(data_product)
     schema = SchemaTable(
         name="my-schema",
-        tableDescription="abc",
+        table_description="abc",
         columns=[],
         data_product_version=data_product,
     )

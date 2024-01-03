@@ -198,7 +198,7 @@ async def update_schema(
     new_version = versioning_service.update_schema(
         table_name,
         columns=[column.model_dump() for column in schema.columns],
-        tableDescription=schema.tableDescription,
+        table_description=schema.table_description,
     )
 
     DataProductRepository(session).update(

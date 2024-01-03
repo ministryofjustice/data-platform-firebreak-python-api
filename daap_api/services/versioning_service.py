@@ -22,18 +22,18 @@ logger = logging.getLogger(__name__)
 UPDATABLE_METADATA_FIELDS = {
     "description",
     "email",
-    "dataProductOwner",
-    "dataProductOwnerDisplayName",
+    "data_product_owner",
+    "data_product_owner_display_name",
     "domain",
     "status",
-    "dpiaRequired",
-    "retentionPeriod",
-    "dataProductMaintainer",
-    "dataProductMaintainerDisplayName",
+    "dpia_required",
+    "retention_period",
+    "data_product_maintainer",
+    "data_product_maintainer_display_name",
     "tags",
 }
 
-MINOR_UPDATE_SCHEMA_FIELDS = {"tableDescription"}
+MINOR_UPDATE_SCHEMA_FIELDS = {"table_description"}
 
 
 class UpdateType(Enum):

@@ -49,11 +49,11 @@ class TestVersioningService:
         assert result.version == "v1.0"
 
     def test_minor_schema_update(self, service):
-        result = service.update_schema("table1", tableDescription="new description")
+        result = service.update_schema("table1", table_description="new description")
         assert result != self.starting_metadata
         assert result.version == "v1.1"
         assert [schema.id is None for schema in result.schemas]
-        assert [schema.tableDescription for schema in result.schemas] == [
+        assert [schema.table_description for schema in result.schemas] == [
             "new description",
             None,
         ]

@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 from ..orm.metadata_orm_models import Status
 
@@ -21,7 +22,9 @@ class Column(BaseModel):
 
 
 class SchemaBase(BaseModel):
-    tableDescription: str = Field(
+    model_config = ConfigDict(alias_generator=to_camel)
+
+    table_description: str = Field(
         description="A description of the data contained within the table",
         json_schema_extra={
             "example": "this table contains example data for an example data product."
@@ -46,6 +49,8 @@ class DataProductBase(BaseModel):
     Base fields that are readable and writable
     """
 
+    model_config = ConfigDict(alias_generator=to_camel)
+
     description: str = Field(
         description="Detailed description about what functional area this Data Product is representing, what purpose it has and business related information.",
         json_schema_extra={
@@ -56,11 +61,11 @@ class DataProductBase(BaseModel):
         description="The identifier of the domain this Data Product belongs to. Should be one of HQ, HMPPS, OPG, LAA, HMCTS, CICA, or Platforms",
         json_schema_extra={"example": "HMPPS"},
     )
-    dataProductOwner: str = Field(
+    data_product_owner: str = Field(
         description="Data Product owner, the unique identifier of the actual user that owns, manages, and receives notifications about the Data Product. To make it technology independent it is usually the email address of the owner.",
         json_schema_extra={"example": "jane.doe@justice.gov.uk"},
     )
-    dataProductOwnerDisplayName: str = Field(
+    data_product_owner_display_name: str = Field(
         description="The human-readable version of dataProductOwner",
         json_schema_extra={"example": "Jane Doe"},
     )
@@ -71,11 +76,11 @@ class DataProductBase(BaseModel):
     status: Status = Field(
         description="this is an enum representing the status of this version of the Data Product. Allowed values are: [draft|published|retired]. This is a metadata that communicates the overall status of the Data Product but is not reflected to the actual deployment status."
     )
-    retentionPeriod: int = Field(
+    retention_period: int = Field(
         description="Retention period of the data in this data product in days.",
         json_schema_extra={"example": 3650},
     )
-    dpiaRequired: bool = Field(
+    dpia_required: bool = Field(
         description="Bool for if a data privacy impact assessment (dpia) is required to access this data product",
         json_schema_extra={"example": True},
     )
@@ -99,12 +104,12 @@ class DataProductCreate(DataProductBase):
         json_schema_extra={"example": "my_data_product"},
     )
 
-    dataProductMaintainer: Optional[str] = Field(
+    data_product_maintainer: Optional[str] = Field(
         default=None,
         description="Secondary party who is able to approve DPIA access requests, but who may or may not be legally responsible for the data",
         json_schema_extra={"example": "information.asset.owner@justice.gov.uk"},
     )
-    dataProductMaintainerDisplayName: Optional[str] = Field(
+    data_product_maintainer_display_name: Optional[str] = Field(
         default=None,
         description="The human-readable version of dataProductMaintainer",
         json_schema_extra={"example": "Jonny Data"},
@@ -118,12 +123,12 @@ class DataProductUpdate(DataProductBase):
 
     model_config = ConfigDict(extra="forbid")
 
-    dataProductMaintainer: Optional[str] = Field(
+    data_product_maintainer: Optional[str] = Field(
         default=None,
         description="Secondary party who is able to approve DPIA access requests, but who may or may not be legally responsible for the data",
         json_schema_extra={"example": "information.asset.owner@justice.gov.uk"},
     )
-    dataProductMaintainerDisplayName: Optional[str] = Field(
+    data_product_maintainer_display_name: Optional[str] = Field(
         default=None,
         description="The human-readable version of dataProductMaintainer",
         json_schema_extra={"example": "Jonny Data"},
@@ -170,4 +175,4 @@ class DataProductRead(DataProductBase):
 
 
 class SchemaReadWithDataProduct(SchemaRead):
-    data_product: DataProductRead
+    data_product: DataProductRead = Field(alias="data_product")  # Inconsistency

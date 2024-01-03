@@ -334,7 +334,7 @@ def test_schema_unchanged(client, schema):
     response = client.put(
         "/v1/schemas/dp:hmpps_use_of_force:statement",
         json={
-            "tableDescription": schema.tableDescription,
+            "tableDescription": schema.table_description,
             "columns": schema.columns,
         },
     )

@@ -50,12 +50,12 @@ def data_product_version_factory(session):
         name = "hmpps_use_of_force"
         description = "Data product for hmpps_use_of_force dev data"
         domain = "HMPPS"
-        dataProductOwner = "dataplatformlabs@digital.justice.gov.uk"
-        dataProductOwnerDisplayName = "Data Platform Labs"
+        data_product_owner = "dataplatformlabs@digital.justice.gov.uk"
+        data_product_owner_display_name = "Data Platform Labs"
         email = "dataplatformlabs@digital.justice.gov.uk"
         status = "draft"
-        retentionPeriod = 3000
-        dpiaRequired = False
+        retention_period = 3000
+        dpia_required = False
         version = "v1.0"
 
     return DataProductVersionFactory
@@ -83,7 +83,7 @@ def schema_factory(session, data_product_version_factory):
 
         data_product_version = SubFactory(data_product_version_factory)
         name = "statement"
-        tableDescription = "desc"
+        table_description = "desc"
         columns = [
             {"name": "id", "type": "bigint", "description": ""},
             {"name": "report_id", "type": "bigint", "description": ""},
