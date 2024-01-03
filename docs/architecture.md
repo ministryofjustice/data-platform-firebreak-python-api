@@ -148,7 +148,7 @@ Some of this could be handled by the python framework, or a load balancer.
 
 Current state of concerns:
 
-- HTTPS (❓)
+- HTTPS (✅ - [handled as default deploy on Cloud Platform is https](https://user-guide.cloud-platform.service.justice.gov.uk/#monitoring))
 - Authentication/Authorisation
   (✅ - handled by [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/),
   a python library for handling Azure Active Directory auth flow)
@@ -158,7 +158,7 @@ Current state of concerns:
 - Rate limiting (❓)
 - Logging and monitoring
   (✅ - [handled through Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#monitoring))
-- Versioning / lifecycle management (❓)
+- Versioning / lifecycle management (❓ - likely handled through FastAPI versioning)
 
 ## Authentication and authorisation
 
