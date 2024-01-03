@@ -173,7 +173,7 @@ Instead, Microsoft recommends using the OAuth 2.0 authorization code grant flow,
 _"enables a client application to obtain authorized access to protected resources like web APIs"_
 
 We are using the [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/)
-python library to handle the integration of this auth flow (_PKCE with authorisation code grant_)
+python library to handle the integration of this auth flow ([_PKCE with authorisation code grant_](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce))
 with FastAPI.
 
 The registration process is very clearly explained in the [tutorial documentation for the library](https://intility.github.io/fastapi-azure-auth/single-tenant/azure_setup).
